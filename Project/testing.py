@@ -27,12 +27,31 @@ df = original_df.groupby(['Year','Nation'])['Fin', 'Sperm', 'Humpback', 'Sei', '
 
 df_1 = original_df.groupby(['Year','Area'])['Fin', 'Sperm', 'Humpback', 'Sei', 'Bryde\'s', 'Minke', 'Gray', 'Bowhead', 'Total'].sum().reset_index()
 
+df_3 = original_df.groupby(['Nation'])['Fin', 'Sperm', 'Humpback', 'Sei', 'Bryde\'s', 'Minke', 'Gray', 'Bowhead', 'Total'].sum().reset_index()
+
+print(df_3)
+
+
+test_1 = px.data.wind()
+
+print(test_1)
+
 
 x = df.groupby(df['Year'],group_keys=True)['Fin', 'Sperm', 'Humpback', 'Sei', 'Bryde\'s', 'Minke', 'Gray', 'Bowhead'].sum().reset_index()
 
+# japan_trend = df.groupby(df['Year','Nation'],group_keys=True)['Fin', 'Sperm', 'Humpback', 'Sei', 'Bryde\'s', 'Minke', 'Gray', 'Bowhead'].sum().reset_index()
+
+
 df_melted = x.melt(id_vars=['Year'], var_name='Species', value_name='Count')
 
-print(df_melted)
+df3_melted = df_3.melt(id_vars=['Nation'], var_name='Species', value_name='Total')
+
+
+fig = px.bar_polar(df, r="frequency", theta="direction",
+                    color="Species", template="ggplot2",
+                    color_discrete_sequence= px.colors.sequential.Plasma_r)
+fig.show()
+
 
 def alpha3code(column):
     CODE=[]
@@ -51,20 +70,9 @@ def alpha3code(column):
                  code = pycountry.countries.get(name='Russian Federation').alpha_3
             elif(country == "USA"):
                code = pycountry.countries.get(alpha_3='USA').alpha_3
-            # elif(country == "Antarctic"):
-            #    #print("HERE\n")
-            #   #country =pycountry.countries.search_fuzzy('Antarctica')
-            #    #code = pycountry.countries.get(name = 'Antarctica').alpha_3
-            # elif(country == "Alaska"):
-                
-            #     #country =pycountry.countries.search_fuzzy('Antarctica')
-            #     #code = pycountry.countries.search_fuzzy('Alaska')
-            #     print(code)
             else:
                 code=pycountry.countries.get(name=country).alpha_3
-            
-           # .alpha_3 means 3-letter country code 
-           # .alpha_2 means 2-letter country code
+
             CODE.append(code)
         except:
             CODE.append('None')
@@ -130,11 +138,15 @@ df_1['size'] = np.ones(len(df_1['longitudes'])) * 5
 
 area_to_num = {area: i for i, area in enumerate(df_1['Area'].unique())}
 
-df_1['Area_num'] = df_1['Area'].map(area_to_num)
+df_1['Whaling Location N.o'] = df_1['Area'].map(area_to_num)
 
 colour_scale = ["blue","green","red","yellow","purple", "turquoise","orange","brown","darkblue","magenta","cyan","teal","olive","lavender","lightblue","darkgreen","pink"]
 
+totals = [str(num) for num in df['Total']]
+totals_1 = [str(num) for num in df_1['Total']]
 
+df['Total_str'] = totals
+df_1['Total_str'] = totals_1
 
 
 # scatter_fig = px.scatter_geo(df_area[year], lat=df_area.latitudes, lon=df_area.longitudes,size = "size",hover_name = "Area", hover_data=["Area_num", "Total"],
@@ -148,6 +160,50 @@ colour_scale = ["blue","green","red","yellow","purple", "turquoise","orange","br
 # scatter_fig.update_coloraxes(showscale=False)
 
 
+area_color_map = {
+    "Antarctic": "blue",
+    "Alaska": "green",
+    "Chukotka": "red",
+    "E. Greenland": "yellow",
+    "Indonesia": "purple",
+    "Japan": "pink",
+    "NE Atlantic": "orange",
+    "Korea": "brown",
+    "W. Iceland": "gray",
+    "W.Indies": "magenta",
+    "NW Canada": "cyan",
+    "NE Canada": "teal",
+    "Azores": "olive",
+    "NW Pacific": "lavender",
+    "Iceland": "lightblue",
+    "USA W coast": "darkgreen",
+    "W. Greenland": "turquoise"
+}
+
+CODE_Nation = df['CODE'].unique()
+print(CODE_Nation)
+
+colors = {
+    'JPN': 'blue',
+    'RUS': 'red',
+    'DNK': 'green',
+    'ISL': 'orange',
+    'IDN': 'purple',
+    'KOR': 'brown',
+    'NOR': 'pink',
+    'VCT': 'gray',
+    'USA': 'black',
+    'PRT': 'cyan',
+    'CAN': 'magenta'
+}
+
+# japan_trend = df[df['Nation'] == 'Japan'].reset_index()
+
+# print(japan_trend)
+
+# japan_trend = df[df['Nation'] == 'Japan'].reset_index()
+# test= px.scatter(japan_trend, x='Year', y='Total')
+# test.show()
 
 
 
@@ -159,53 +215,77 @@ app = Dash(__name__)
     Input('slider', 'value')
 )
 
+def update_graphs_1(selected_year):
 
-def update_graphs(selected_year):
-    # x = np.linspace(-slider_value, slider_value, 100)
     filtered_df = df[df['Year'] == selected_year]
     filtered_df_1 = df_1[df_1['Year'] == selected_year]
     filtered_df_2 = df_melted[df_melted['Year'] == selected_year]
 
     fig1 = px.choropleth(filtered_df, geojson="https://raw.githubusercontent.com/python-visualization/folium/master/examples/data/world-countries.json",
-                            color_continuous_scale='RdYlGn_r',                      
+                            color_continuous_scale=px.colors.sequential.YlOrRd,                      
                             color = filtered_df.Total,
-                            locations=filtered_df.CODE, featureidkey="id",
+                            locations=filtered_df.CODE, featureidkey="id", hover_name = "Nation",
                              center={"lat": 0, "lon": 0},projection = 'natural earth')
 
     scatter_fig = px.scatter_geo(filtered_df_1, lat=filtered_df_1.latitudes, lon=filtered_df_1.longitudes,size = "size",hover_name = "Area", hover_data=["Total"], 
-                            projection = 'natural earth',color='Area_num',color_continuous_scale=px.colors.sequential.Viridis, range_color= [0,16])
-
+                            projection = 'natural earth',color=filtered_df_1.Area,color_discrete_sequence= px.colors.qualitative.Light24, animation_group=filtered_df_1.Area,text="Total_str")
+    
+    scatter_fig.update_traces(marker=dict(size=25,opacity = 0.9))
     scatter_fig.update_layout(margin={"r": 0, "t": 0, "l": 0, "b": 0})
-    scatter_fig.update_traces(textfont_size=8)
+    scatter_fig.update_traces(textfont=dict(family='sans-serif', size=10, color='black'))
     scatter_fig.update_coloraxes(showscale=True)
 
-    fig1.add_trace(scatter_fig.data[0])
+    for i in scatter_fig.data:
+        fig1.add_trace(i)
 
-    fig1.update_layout(title='Whaling Global Data')
+    fig1.update_layout(title=f'Countries Involved and Whaling Locations in Year {selected_year}')
+    fig1.data[0].legendgroup= scatter_fig.data[0].legendgroup
+  
 
-    fig1.layout.coloraxis2 = scatter_fig.layout.coloraxis
-    
-    fig1['data'][1]['marker'] = {
-    'color': scatter_fig.data[0].marker.color,
-    'size': 20,
-    'coloraxis': "coloraxis2",
-    'opacity': 0.5,
-    'sizemode': 'area',
-    'sizeref': 0.001,
-    'autocolorscale': False
-    }
+    # fig1['data'][1]['marker'] = {
+    # 'color': scatter_fig.data[0].marker.color,
+    # 'size': 20,
+    # # 'coloraxis': "coloraxis",
+    # 'opacity': 0.5,
+    # 'sizemode': 'area',
+    # 'sizeref': 0.001,
+    # 'autocolorscale': False
+    # }
 
     # fig.update_layout( autosize=False,width=800, height=700)
-    fig1.update_layout(coloraxis2_colorbar_x=-0.15)
+    fig1.update_layout(coloraxis_colorbar_x=-0.15)
     
     bar_chart = px.bar(filtered_df_2,x="Species",y="Count",barmode='stack')
+    bar_chart.update_layout(title=f'Species Lost in Year {selected_year}')
+    bar_chart.update_traces(marker_color='#D34336')
 
     # fig2 = go.Figure(data=[go.Scatter(x=x, y=y2)])
     # fig2.update_layout(title='Cosine Graph')
     return fig1,bar_chart
 
+
+
+@app.callback(
+    Output('aggregate-graph', 'figure'),
+    Input('my-checkbox', 'value')
+)
+
+def update_graphs(selected_nation):
+    print(selected_nation)
+    fig = go.Figure()
+    traces = []
+    for value in selected_nation:
+        trend = df[df['CODE'] == value].reset_index()
+        traces.append(px.scatter(trend, x='Year', y='Total',color= trend.CODE,color_discrete_map=colors))
+
+    for trace in traces:
+        fig.add_traces(trace.data)
+
+    return fig
+
+
 app.layout = html.Div([
-    html.H1('Two Graphs with a Slider'),
+    html.H1('Whaling Global Data and Statistics'),
     dcc.Slider(
         id='slider',
         min=df['Year'].min(),
@@ -215,9 +295,17 @@ app.layout = html.Div([
         marks= {str(year): str(year) if year % 5 == 0 else '' for year in df['Year'].unique()},
     ),
       dcc.Graph(id='world-graph'),
-      dcc.Graph(id='bar-graph')
+      dcc.Graph(id='bar-graph'),
+
+    dcc.Checklist(
+        id='my-checkbox',
+        options=[
+             {'label': i, 'value': i} for i in  CODE_Nation],
+        value=['JPN','RUS','KOR'],
+    ),
+    dcc.Graph(id='aggregate-graph')
 ])
 
 
-if __name__ == '__main__':
-    app.run_server(debug=True)
+# if __name__ == '__main__':
+#     app.run_server(debug=True)
