@@ -1,0 +1,42 @@
+import pandas as pd
+import seaborn as sns
+import matplotlib.pyplot as plt
+import mplcursors 
+
+# Country,Region,Happiness Rank,Happiness Score,Standard Error,Economy (GDP per Capita),
+# Family,Health (Life Expectancy),Freedom,Trust (Government Corruption),
+# Generosity,Dystopia Residual
+
+def plot_scatter(file):
+    df = pd.read_csv(file)
+
+    fig, ax = plt.subplots()
+
+    sns_plot = sns.scatterplot(data = df, x = "Happiness Score", y = "Economy (GDP per Capita)", hue = "Region")
+
+    happiness_score = df['Happiness Score']
+    economy = df['Economy (GDP per Capita)']
+    countries = df['Country']
+
+    def on_hover(sel):
+        x, y = sel.target
+        for label, a, b in zip(countries, happiness_score, economy):
+                    if( (x == a) and (y == b)):
+                        c =  label
+                        break
+        sel.annotation.set(text=f'x: {x:.2f}, y: {y:.2f}, {c}')
+
+    mplcursors.cursor(sns_plot, hover= True).connect("add", on_hover)
+    return plt
+
+file_array = ["happiness_report_2022/2015.csv", "happiness_report_2022/2016.csv", "happiness_report_2022/2017.csv",
+"happiness_report_2022/2018.csv", "happiness_report_2022/2019.csv", "happiness_report_2022/2020.csv", 
+"happiness_report_2022/2021.csv", "happiness_report_2022/2022.csv"]
+
+plots = []
+for i in range(len(file_array)):
+    x = plot_scatter(file_array[i])
+    plots.append(x)
+
+
+
