@@ -21,6 +21,9 @@ locations = pd.read_csv("Project\\Whaling Locations1.csv")
 df = original_df.groupby(['Year','Nation'])['Fin', 'Sperm', 'Humpback', 'Sei', 'Bryde\'s', 'Minke', 'Gray', 'Bowhead', 'Total'].sum().reset_index()
 
 df_1 = original_df.groupby(['Year','Area'])['Fin', 'Sperm', 'Humpback', 'Sei', 'Bryde\'s', 'Minke', 'Gray', 'Bowhead', 'Total'].sum().reset_index()
+x = df.groupby(df['Year'],group_keys=True)['Fin', 'Sperm', 'Humpback', 'Sei', 'Bryde\'s', 'Minke', 'Gray', 'Bowhead'].sum().reset_index()
+
+print(x)
 
 # Save the new dataset to a CSV file
 years = df['Year']
@@ -135,6 +138,8 @@ grouped = df.groupby('Year').agg({
 # Convert the result to a dictionary
 result = grouped.to_dict(orient='index')
 
+
+
 df['Year'] = df['Year'].apply(pd.to_numeric)
 df = df.sort_values('Year')
 
@@ -169,6 +174,8 @@ for d in df_1['Area']:
 df_1['latitudes'] = latitudes
 df_1['longitudes'] = longitudes
 df_1['size'] = np.ones(len(df_1['longitudes'])) * 2
+
+
 
 # df_1.to_csv('Project\\new_dataset_2.csv', index=False)
 
@@ -333,30 +340,30 @@ fig.update_layout(coloraxis2_colorbar_x=-0.15)
 
 
 ##Create Dashboard
-app = Dash(__name__)
-app.layout = html.Div(children=[
-    html.H1(children='Hello Dash'),
+# app = Dash(__name__)
+# app.layout = html.Div(children=[
+#     html.H1(children='Hello Dash'),
 
-    html.Div(children='''
-        Dash: A web application framework for your data.
-    '''),
+#     html.Div(children='''
+#         Dash: A web application framework for your data.
+#     '''),
 
-     html.Div(
-        dcc.Graph(
-            id='example-graph',
-            figure=fig
-    ))
+#      html.Div(
+#         dcc.Graph(
+#             id='example-graph',
+#             figure=fig
+#     ))
     
-    html.Div(
-        dcc.Graph(
-            id='example-graph',
-            figure=fig
-    ))
+#     html.Div(
+#         dcc.Graph(
+#             id='example-graph',
+#             figure=fig
+#     ))
 
-])
+# ])
 
-if __name__ == '__main__':
-    app.run_server(debug=True)
+# if __name__ == '__main__':
+#     app.run_server(debug=True)
 
 
 
