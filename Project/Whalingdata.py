@@ -14,15 +14,11 @@ from dash import Dash, html, dcc
 original_df = pd.read_csv("Project\\WhalingData.csv").dropna()
 locations = pd.read_csv("Project\\Whaling Locations1.csv")
 
-
-
-
 # Group the dataframe by Year and Nation and sum the Total column
 df = original_df.groupby(['Year','Nation'])['Fin', 'Sperm', 'Humpback', 'Sei', 'Bryde\'s', 'Minke', 'Gray', 'Bowhead', 'Total'].sum().reset_index()
 
 df_1 = original_df.groupby(['Year','Area'])['Fin', 'Sperm', 'Humpback', 'Sei', 'Bryde\'s', 'Minke', 'Gray', 'Bowhead', 'Total'].sum().reset_index()
 
-print(x)
 
 # Save the new dataset to a CSV file
 years = df['Year']
@@ -39,6 +35,23 @@ world.to_csv('Project\\world.csv', index=False)
 
 
 x = gpd.read_file("Project\\former-soviet-union-ussr_1371.geojson")
+
+
+# Read the CSV file and store the data in a DataFrame
+
+# Convert the 'Year' column to a datetime format and extract the decade
+original_df['Year'] = pd.to_datetime(df['Year'], format='%Y')
+original_df['Decade'] = (df['Year'].dt.year // 10) * 10
+
+# Group the data by decade and calculate the cumulative totals for each whale type
+grouped_by_decade = df.groupby('Decade').agg({'Fin': 'sum', 'Sperm': 'sum', 'Humpback': 'sum', 'Sei': 'sum', "Bryde's": 'sum', 'Minke': 'sum', 'Gray': 'sum', 'Bowhead': 'sum', 'Total': 'sum'})
+
+# Select only the columns for the whale types
+grouped = grouped[['Fin', 'Sperm', 'Humpback', 'Sei', "Bryde's", 'Minke', 'Gray', 'Bowhead', 'Total']]
+
+# Save the resulting DataFrame to a new CSV file
+grouped.to_csv('whale_data_grouped.csv')
+
 
 
 
