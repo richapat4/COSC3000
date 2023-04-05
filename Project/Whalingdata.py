@@ -9,7 +9,9 @@ import json
 import numpy as np
 import seaborn as sns
 import itertools 
+import polarPlot
 from dash import Dash, html, dcc
+
 
 original_df = pd.read_csv("Project\\WhalingData.csv").dropna()
 locations = pd.read_csv("Project\\Whaling Locations1.csv")
@@ -47,10 +49,10 @@ original_df['Decade'] = (df['Year'].dt.year // 10) * 10
 grouped_by_decade = df.groupby('Decade').agg({'Fin': 'sum', 'Sperm': 'sum', 'Humpback': 'sum', 'Sei': 'sum', "Bryde's": 'sum', 'Minke': 'sum', 'Gray': 'sum', 'Bowhead': 'sum', 'Total': 'sum'})
 
 # Select only the columns for the whale types
-grouped = grouped[['Fin', 'Sperm', 'Humpback', 'Sei', "Bryde's", 'Minke', 'Gray', 'Bowhead', 'Total']]
+grouped_by_decade = grouped_by_decade[['Fin', 'Sperm', 'Humpback', 'Sei', "Bryde's", 'Minke', 'Gray', 'Bowhead', 'Total']]
 
 # Save the resulting DataFrame to a new CSV file
-grouped.to_csv('whale_data_grouped.csv')
+grouped_by_decade.to_csv('whale_data_grouped.csv')
 
 
 

@@ -6,11 +6,18 @@ import geopandas as gpd
 import plotly.express as px
 import numpy as np
 import plotly.graph_objects as go
+import plotly.express as px
 
 import pandas as pd
 
 # load the csv data
 original_df_2 = pd.read_csv("Project\\WhalingData.csv").dropna()
+
+# long_df = px.data.medals_long()
+
+# # print(long_df)
+# # fig = px.bar(long_df, x="nation", y="count", color="medal", title="Long-Form Input")
+# # fig.show()
 
 # Create a dictionary to hold the data
 decades_dict = {}
