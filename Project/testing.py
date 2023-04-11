@@ -23,6 +23,8 @@ import polarPlot
 original_df = pd.read_csv("Project\\WhalingData.csv").dropna()
 original_df['Nation'].replace({"USSR": "Russia"}, inplace=True)
 
+original_df['Type'] = original_df['Type'].str.title()
+
 locations = pd.read_csv("Project\\Whaling Locations1.csv")
 
 
@@ -241,7 +243,11 @@ df['Total_str'] = totals
 df_1['Total_str'] = totals_1
 df_1_world_comb['Total_str'] = totals_2
 
-# scatter_fig = px.scatter_geo(df_area[year], lat=df_area.latitudes, lon=df_area.longitudes,size = "size",hover_name = "Area", hover_data=["Area_num", "Total"],
+# scatter_fig = px.scatter_geo(df_area[year], 
+# 
+# 
+# 
+# lat=df_area.latitudes, lon=df_area.longitudes,size = "size",hover_name = "Area", hover_data=["Area_num", "Total"],
 #                             color=df_1['Area_num'],color_continuous_scale=colour_scale ,range_color=[0,16], 
 #                             projection = 'natural earth',text= "Total_str")
 
@@ -275,19 +281,38 @@ area_color_map = {
 CODE_Nation = df['CODE'].unique()
 # print(CODE_Nation)
 
+
+haline_colors = px.colors.sequential.haline
+
+print(haline_colors[2])
+# Define a dictionary mapping country codes to colors from the haline color map
 colors = {
-    'JPN': '#0073cf',
-    'RUS': 'red',
-    'DNK': 'green',
-    'ISL': 'orange',
-    'IDN': 'purple',
-    'KOR': '#f95d6a',
-    'NOR': 'pink',
-    'VCT': 'gray',
-    'USA': '#aaff80',
-    'PRT': 'cyan',
-    'CAN': 'magenta'
+    'JPN': haline_colors[0],
+    'RUS': haline_colors[1],
+    'DNK': haline_colors[2],
+    'ISL': haline_colors[3],
+    'IDN': haline_colors[4],
+    'KOR': '#00bfff',
+    'NOR': '#890089',
+    'VCT':  'gray',
+    'USA': haline_colors[8],
+    'PRT': haline_colors[9],
+    'CAN': haline_colors[10]
 }
+
+# colors = {
+#     'JPN': '#0073cf',
+#     'RUS': 'red',
+#     'DNK': 'green',
+#     'ISL': 'orange',
+#     'IDN': 'purple',
+#     'KOR': '#f95d6a',
+#     'NOR': 'pink',
+#     'VCT': 'gray',
+#     'USA': '#aaff80',
+#     'PRT': 'cyan',
+#     'CAN': 'magenta'
+# }
 
 # japan_trend = df[df['Nation'] == 'Japan'].reset_index()
 
@@ -320,7 +345,7 @@ external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
 
 
 
-app = Dash(__name__,external_stylesheets=[dbc.themes.BOOTSTRAP])
+app = Dash(__name__, external_stylesheets=[dbc.themes.LUX])
 
 tab_style = {
     'borderBottom': '1px solid #d6d6d6',
@@ -328,16 +353,16 @@ tab_style = {
     'fontWeight': 'bold',
     'backgroundColor': 'black',
     'height': '30px',
-    'width': '400px',
+    'width': '300px',
     'position':'relative'
 }
 
 tab_selected_style = {
     'borderTop': '1px solid #d6d6d6',
     'borderBottom': '1px solid #d6d6d6',
-    'backgroundColor': '#119DFF',
+    'backgroundColor': '#0F4799',
     'height': '30px',
-    'width': '400px',
+    'width': '300px',
     'color': 'white',
     'padding': '6px',
     'color': 'white',
@@ -402,7 +427,7 @@ def update_style(n_clicks, data):
         'borderBottom': '1px solid #d6d6d6',
         'padding': '6px',
         'height': '30px',
-        'width': '400px',
+        'width': '300px',
     }
 
     if n_clicks is None:
@@ -424,7 +449,7 @@ def update_style(n_clicks, data):
                     'borderBottom': '1px solid #d6d6d6',
                     'padding': '6px',
                     'height': '30px',
-                    'width': '400px',
+                    'width': '300px',
         }
         checkbox_style = {
         'color': font_color,
@@ -441,11 +466,12 @@ def update_style(n_clicks, data):
     Output('heat-map', 'figure'),
     Input('slider', 'value'),
     Input('all-box', 'value'),
+    Input('animate-box', 'value'),
     Input('toggle-state', 'data'),
     Input('theme-button', 'n_clicks')
 )
 
-def update_graphs_1(selected_year,all, data, n_clicks):
+def update_graphs_1(selected_year,all,animate, data, n_clicks):
     print(data)
     print(all)
     filtered_df = df[df['Year'] == selected_year]
@@ -454,13 +480,28 @@ def update_graphs_1(selected_year,all, data, n_clicks):
     df_area_breakdown = pd.DataFrame(df_area[selected_year])
     width_h = 500
     height_h = 500
+    point_colors = px.colors.sequential.haline
+    point_colors[10] = 'gray'
+
+    titleStr = f'in {selected_year}'
+    # point_colors[3] = '#00bfff'
+    # point_colors[2] ='#890089'
+    #     'IDN': haline_colors[4],
+    # 'KOR': '#00bfff',
+    # 'NOR': '#890089',
+
+    #     'KOR': '#00bfff',
+    # 'NOR': '#890089',
+    # 'VCT':  'gray',
+
     
+
     if(data % 2 ==0):
         ex_template ='plotly_white'
     else:
         ex_template = 'plotly_dark'
 
-    if(len(all) == 1):
+    if((len(all) == 1) and (len(animate) == 0)):
         filtered_df = df_world_comb
         filtered_df_1 = df_1_world_comb
         filtered_df_2 = df_melted[df_melted['Year'] == selected_year]
@@ -468,6 +509,7 @@ def update_graphs_1(selected_year,all, data, n_clicks):
         df_area_breakdown = df_area_total
         width_h = 800
         height_h = 800
+        titleStr = f'- Total Across All Years'
         print('HERE')
 
     df_heat_year = df_heat_year.pivot(index='Nation', columns='Type', values='Total').fillna(0)
@@ -478,25 +520,97 @@ def update_graphs_1(selected_year,all, data, n_clicks):
     df_area_breakdown['Log_scale'] = np.where(df_area_breakdown['Number'] == 0, 0, np.log10(df_area_breakdown['Number']))
 
     bar_chart2 = go.Figure()
-    bar_chart2 = px.bar(df_area_breakdown, x="Log_scale", y="Area", color='Whale', orientation = 'h',title='Whaling Location Breakdown by Area in Year {0}'.format(selected_year),barmode='stack',template = ex_template,color_discrete_sequence = px.colors.sequential.haline)
+    # point_colors = ['#003f5c', '#2f4b7c', '#665191', '#a05195', '#d45087', '#f95d6a', '#ff7c43', '#ffa600','#488f31','#569e7a','#87b68d']
+
+    bar_chart2 = px.bar(df_area_breakdown, x="Number", y="Area", color='Whale', orientation = 'h',title=f'Whaling Location Breakdown by Area {titleStr}',barmode='stack',template = ex_template,color_discrete_sequence = point_colors,log_x=True)
+    bar_chart2.update_xaxes(title='Number of Whales',
+                        showgrid=True,  # show the vertical grid lines
+                        gridcolor='darkgray',  # set the color of the vertical grid lines
+                        gridwidth=1)
+
     if(selected_year == 1985 and (len(all) == 0)):
         bar_chart2.update_traces(width=0.1)
     
+
+    if(len(animate) == 1): #animate world map over time
+        fig1 = px.choropleth(df, geojson="https://raw.githubusercontent.com/python-visualization/folium/master/examples/data/world-countries.json",
+                        color_continuous_scale=px.colors.sequential.YlOrRd,                      
+                        color = df.Total,  template=ex_template,
+                        locations=df.CODE, featureidkey="id", hover_name = "Nation",
+                        center={"lat": 0, "lon": 0},projection = 'natural earth',animation_frame=df.Year,
+                            animation_group=df.Total)
+
+
+        scatter_fig = px.scatter_geo(df_1, lat=df_1.latitudes, lon=df_1.longitudes,size = "size",hover_name = "Area", hover_data=["Total", "longitudes", "latitudes"], 
+                                hovertemplate =                  
+                                "<b>%{hover_name}</b><br>" +
+                               "Total %{Total}<br>" +
+                               "Longitude: %{longitudes}<br>" +
+                               "Latitude: %{latitudes}<br>",
+                        projection = 'natural earth',color="Nation", color_discrete_sequence = point_colors , animation_group=df_1.Area,text="Total_str", animation_frame=df_1.Year)
+        scatter_fig.update_traces(marker=dict(size=30,opacity = 1.0, line=dict(width=1, color='lightgray')))
+        scatter_fig.update_layout(margin={"r": 0, "t": 0, "l": 0, "b": 0})
+        scatter_fig.update_layout(legend=dict(title='Whaling Locations',font=dict(family='sans-serif',size=16)))
+        scatter_fig.update_traces(marker=dict(size=20),selector=dict(mode='legend'))
+                                
+        scatter_fig.update_traces(textfont=dict(family='sans-serif', size=16, color='lightgray'))
+        scatter_fig.update_coloraxes(showscale=True)
+
+        # print(fig1.frames)
+        # print(scatter_fig.frames)
+        # for frame_x in scatter_fig.frames:
+        #     for frame_y in fig1.frames:
+        #         frame_y.data = frame_y.data + frame_x.data
+        # for i in scatter_fig.data:
+        #     fig1.add_trace(i)
+
+        for fe, fne in zip(fig1.frames, scatter_fig.frames):
+            # for t in fne.data:
+            #     t.update(marker_color= "colors")
+            fe.update(data = fe.data + fne.data)
+        # print(fig1.frames)
+        # fig1.layout.legendgroup2 = scatter_fig.layout.
+        # fig1.data[0].legendgroup= scatter_fig.data[0].legendgroup
+        # fig1.update_layout(coloraxis_colorbar_x=-0.15)
+    else:
+
+        fig1 = px.choropleth(filtered_df, geojson="https://raw.githubusercontent.com/python-visualization/folium/master/examples/data/world-countries.json",
+                                color_continuous_scale=px.colors.sequential.YlOrRd,                      
+                                color = filtered_df.Total,  template=ex_template,
+                                locations=filtered_df.CODE, featureidkey="id", hover_name = "Nation",
+                                center={"lat": 0, "lon": 0},projection = 'natural earth')
+
+        # scatter_fig = go.Figure()
+        scatter_fig = px.scatter_geo(filtered_df_1, lat=filtered_df_1.latitudes, lon=filtered_df_1.longitudes,hover_name = "Area", hover_data=["Total", "longitudes", "latitudes"], 
+                                projection = 'natural earth',color="Nation", color_discrete_sequence = point_colors , animation_group=filtered_df_1.Area,text="Total_str", custom_data=["Total_str"])
     
+        scatter_fig.update_traces(marker=dict(size=30,opacity = 0.95, line=dict(width=1, color='white')))
+        scatter_fig.update_layout(margin={"r": 0, "t": 0, "l": 0, "b": 0})
+        scatter_fig.update_layout(legend=dict(title='Whaling Locations',font=dict(family='sans-serif',size=14)))
+        scatter_fig.update_traces(marker=dict(size=20),selector=dict(mode='legend'))
+                                
+        scatter_fig.update_traces(textfont=dict(family='sans-serif', size=9, color='white'))
+        scatter_fig.update_coloraxes(showscale=True)
 
-    # # df_heatmap2 = [df['Whale'] != 'Total'] # remove the Total row
-    # df_heat_area = df_heatmap2.pivot(index='Area', columns='Whale', values='Number').fillna(0)
-    # df_heat_area.columns.name = None
-    # df_heat_area.index.name = None
+        for i in scatter_fig.data:
+            fig1.add_trace(i)
 
-    point_colors = px.colors.sequential.haline
+        fig1.update_layout(title=f'Countries Involved and Whaling Locations {titleStr}',font=dict(family='sans-serif',size=12))
+        fig1.data[0].legendgroup= scatter_fig.data[0].legendgroup
+        fig1.update_layout(coloraxis_colorbar_x=-0.15)
+        fig1.update_layout(coloraxis_colorbar=dict(title=dict(text='Total by Nation')))
+        fig1.update_layout(legend=dict(title='Nation Involved in Area',font=dict(family='sans-serif',size=12)))
 
-    fig1 = px.choropleth(filtered_df, geojson="https://raw.githubusercontent.com/python-visualization/folium/master/examples/data/world-countries.json",
-                            color_continuous_scale=px.colors.sequential.YlOrRd,                      
-                            color = filtered_df.Total,  template=ex_template,
-                            locations=filtered_df.CODE, featureidkey="id", hover_name = "Nation",
-                             center={"lat": 0, "lon": 0},projection = 'natural earth')
-    # fig1.update_layout(
+
+    heat_map = px.imshow(df_heat_year, color_continuous_scale=px.colors.sequential.YlOrRd, origin='lower',text_auto = True,template=ex_template, width = width_h, height =height_h)
+    heat_map.update_layout(title=f'Type of Whale and Nation responsible {titleStr}',font=dict(family='sans-serif',size=12))
+    # bar_chart = px.bar(filtered_df_2,x="Species",y="Count",barmode='stack', template=ex_template)
+    # bar_chart.update_layout(title=f'Species Lost in Year {selected_year}')
+    # bar_chart.update_traces(marker_color='#D34336')
+    # # df = px.data.medals_wide(indexed=True)
+
+
+        # fig1.update_layout(
     #     geo=dict(
     #         lonaxis=dict(
     #             range=[-180, 180],
@@ -511,29 +625,7 @@ def update_graphs_1(selected_year,all, data, n_clicks):
     
     # fig1.update_geos(showocean = True, oceancolor='#f9f9f9')
     
-    scatter_fig = px.scatter_geo(filtered_df_1, lat=filtered_df_1.latitudes, lon=filtered_df_1.longitudes,size = "size",hover_name = "Area", hover_data=["Total"], 
-                            projection = 'natural earth',color="Nation", color_discrete_sequence = point_colors , animation_group=filtered_df_1.Area,text="Total_str")
     
-    scatter_fig.update_traces(marker=dict(size=25,opacity = 0.9, line=dict(width=1, color='white')))
-    scatter_fig.update_layout(margin={"r": 0, "t": 0, "l": 0, "b": 0})
-    scatter_fig.update_layout(legend=dict(title='Whaling Locations',font=dict(family='sans-serif',size=14)))
-    scatter_fig.update_traces(marker=dict(size=10),selector=dict(mode='legend'))
-                              
-    scatter_fig.update_traces(textfont=dict(family='sans-serif', size=8, color='white'))
-    scatter_fig.update_coloraxes(showscale=True)
-
-    for i in scatter_fig.data:
-        fig1.add_trace(i)
-
-    fig1.update_layout(title=f'Countries Involved and Whaling Locations in Year {selected_year}')
-    fig1.data[0].legendgroup= scatter_fig.data[0].legendgroup
-    fig1.update_layout(coloraxis_colorbar_x=-0.15)
-    
-    # bar_chart = px.bar(filtered_df_2,x="Species",y="Count",barmode='stack', template=ex_template)
-    # bar_chart.update_layout(title=f'Species Lost in Year {selected_year}')
-    # bar_chart.update_traces(marker_color='#D34336')
-    # # df = px.data.medals_wide(indexed=True)
-    heat_map = px.imshow(df_heat_year, color_continuous_scale=px.colors.sequential.YlOrRd, origin='lower',text_auto = True,template=ex_template, width = width_h, height =height_h)
     # heat_map2 = px.imshow(df_heat_area, color_continuous_scale='RdBu_r', origin='lower',text_auto = True,template=ex_template)
     return fig1,bar_chart2,heat_map
 
@@ -570,13 +662,20 @@ def update_graphs_2(selected_nation,n_clicks,data):
         
         fig.add_traces(trace.data)
         fig.update_layout(template = ex_template)
-    list_colors = px.colors.sequential.thermal
+        fig.update_yaxes(type='log',title="Number of Whales")
+        fig.update_layout(title='Whaling over Time by Nation')
+        fig.update_xaxes(title= 'Year')
+
+    list_colors = px.colors.sequential.haline
     first_eight_colors = list_colors[2:10]
+    # list_colors = px.colors.sequential.haline
+    color_t = list_colors[4]
+    print(color_t)
     box_new = box.melt(id_vars=['Year'], var_name='Species', value_name='Number')
     box_new['Log_scale'] = np.where(box_new['Number'] == 0, 0, np.log10(box_new['Number']))
-    boxF = px.box(box_new, x='Species', y='Log_scale', color='Species',
-             title='Whale Species Population 1985-2018',template = ex_template,color_discrete_sequence=first_eight_colors)
-
+    boxF = px.box(box_new, x='Species', y='Number',
+             title='Whale Species Population Loss 1985-2018',template = ex_template,color_discrete_sequence=['#0F4799'],log_y=True)
+    boxF.update_yaxes(type='log')
     return fig,boxF
 
 
@@ -593,9 +692,10 @@ def update_graphs_3(selected_year_2,all, data,n_clicks,):
 
     stackedCluster = stacked[stacked['Year'] == selected_year_2]
     stackedCluster = stackedCluster.drop(columns = ['Year'])
-
+    titleStr = f'in {selected_year_2}'
     if(len(all) == 1):
         stackedCluster = stacked_total
+        titleStr = '- Total Across All Years'
     # print(stackedCluster)
 
     stackedCluster_melted= pd.melt(stackedCluster, id_vars=['Type', 'CODE'], var_name='Whale', value_name='Number')
@@ -628,7 +728,7 @@ def update_graphs_3(selected_year_2,all, data,n_clicks,):
             go.Bar(x=[plot_df.CODE, plot_df.Whale], y=plot_df.log_scale, name=r, marker_color=c,hovertext = r),
         )
         
-    stackedBar.update_layout(title=f'Type and Species of Whales,by Country {selected_year_2}',template=ex_template)
+    stackedBar.update_layout(title=f'Type and Species of Whales,by Country {titleStr}',template=ex_template)
 
     return stackedBar
 
@@ -669,17 +769,18 @@ def update_graphs_4(n_clicks,decade_num, data):
     decadeMelted['RedList'] = decadeMelted['Whale'].map(df_endanger.set_index('Species')[decade])
 
     list_colors = px.colors.sequential.YlOrRd[2:]
-    # categories = ['UN', 'LC', 'NT*', 'VU', 'LC', 'NE', 'EN']
+    categories = ['UN', 'LC', 'NT*', 'VU', 'LC', 'NE', 'EN']
     # colors = ['rgb(254,217,118)', 'rgb(254,178,76)', 'rgb(253,141,60)', 'rgb(252,78,42)', 'rgb(227,26,28)', 'rgb(189,0,38)', 'rgb(128,0,38)']
     # color_map = {category: color for category, color in zip(categories, colors)}
     # color_map = {'UN': 'rgb(254,217,118)', 'LC': 'rgb(227,26,28)', 'NT*': 'rgb(253,141,60)', 'VU': 'rgb(252,78,42)', 'NE': 'rgb(189,0,38)', 'EN': 'rgb(128,0,38)'}
 
-    polarBar = px.bar_polar(decadeMelted, r='log_scale', theta='Country', color='RedList',
+    polarBar = px.bar_polar(decadeMelted, r='value', theta='Country', color='RedList',
                     # color_discrete_sequence=color_map,
-                    template=ex_template,
-                    labels={'log_scale': 'Number of Whales'},width=800, height=600, hover_data=["Whale", "log_scale"],color_discrete_sequence = list_colors)
+                    template=ex_template,log_r = True,
+                    labels={'value': 'Number of Whales'},width=800, height=600, hover_data=["Whale", "value"],color_discrete_sequence = list_colors,category_orders={'RedList': categories})
     polarBar.update_traces(text=decadeMelted['Whale'],marker=dict(line=dict(width=1, color='black')))
     polarBar.update_polars(radialaxis_gridcolor=grid_color)
+    polarBar.update_polars(radialaxis=dict(dtick=1))
     polarBar.update_polars(angularaxis_gridcolor=grid_color)
 
     # update the layout
@@ -704,7 +805,7 @@ def update_graphs_4(n_clicks,decade_num, data):
 app.layout = html.Div(id = 'dashboard', children = [ 
     html.Button('Change Theme', id='theme-button', n_clicks= 0),
     dcc.Store(id='toggle-state', data=False),
-    html.H1('Whaling Global Data and Statistics', id = 'heading_1'),
+    html.H1('Whaling Global Data Visualisation', id = 'heading_1'),
     #Put these two divisions into a panel
     dcc.Tabs(id='tabs', value='tab-1',  children=[
         dcc.Tab(id = 'tab-1', label='Tab 1', value='tab-1', selected_style = tab_selected_style,
@@ -721,13 +822,20 @@ children=[
                         value=df['Year'].min(),
                         step = None,
                         marks={i: '{}'.format(i) for i in range(1985, 2018,1)},
-                        ),style={'width': '80%', 'display': 'inline-block'}),
+                        ),style={'width': '100%', 'display': 'inline-block', 'fontSize': '12px'}),
                     html.Div(dcc.Checklist(
                         id='all-box',
                         options=
                         [{'label': 'ALL', 'value': 'ALL'}],
                         value=[]
-                    ), style={'width': '20%', 'display': 'inline-block'}),
+                    ), style={'width': '10%', 'display': 'inline-block','fontSize': '12px'}),
+                    
+                    html.Div(dcc.Checklist(
+                        id='animate-box',
+                        options=
+                        [{'label': 'ANIMATE', 'value': 'animate'}],
+                        value=[]
+                    ), style={'width': '10%', 'display': 'inline-block','fontSize': '12px'}),
                     dcc.Graph(id='world-graph'),
                     #  style={'width': '40%', 'display': 'inline-block'}),
                     html.Div(dcc.Graph(id='heat-map'),
@@ -767,14 +875,14 @@ children=[
                         value=df['Year'].min(),
                         step = None,
                         marks={i: '{}'.format(i) for i in range(1985, 2018,1)},
-                    ),style={'width': '80%', 'display': 'inline-block'}), 
+                    ),style={'width': '100%', 'display': 'inline-block','fontSize': '2px'}), 
                     
                     html.Div(dcc.Checklist(
                         id='all-box-1',
                         options=
                         [{'label': 'ALL', 'value': 'ALL'}],
                         value=[]
-                    ), style={'width': '20%', 'display': 'inline-block'}),
+                    ), style={'width': '10%', 'display': 'inline-block','fontSize':'12px'}),
 
                     dcc.Graph(id='stacked-map')
                     ]),

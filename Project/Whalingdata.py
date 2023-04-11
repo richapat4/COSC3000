@@ -332,9 +332,9 @@ scatter_fig.update_coloraxes(showscale=False)
 fig.add_trace(scatter_fig.data[0])
 
 for fe, fne in zip(fig.frames, scatter_fig.frames):
-        for t in fne.data:
-            t.update(marker_coloraxis = "coloraxis2")
-        fe.update(data=fe.data + fne.data)
+        # for t in fne.data:
+            # t.update(marker_coloraxis = "coloraxis2")
+    fe.update(data=fe.data + fne.data)
 
 fig.layout.coloraxis2 = scatter_fig.layout.coloraxis
 
