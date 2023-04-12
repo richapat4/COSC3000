@@ -16,9 +16,14 @@ import seaborn as sns
 import itertools 
 import base64
 import dash_bootstrap_components as dbc
+import statsmodels.api as sm
+import pylab as py
+
+import scipy.stats as stats
 import polarPlot
+from plotly.tools import mpl_to_plotly
 
-
+from statsmodels.graphics.gofplots import qqplot_2samples
 
 original_df = pd.read_csv("Project\\WhalingData.csv").dropna()
 original_df['Nation'].replace({"USSR": "Russia"}, inplace=True)
@@ -402,6 +407,8 @@ font_color = 'white'
     Output('tab-2','style'),
     Output('tab-3','style'),
     Output('tab-4','style'),
+    Output('dropDown1','style'),
+    Output('dropDown2','style'),
     Output('toggle-state', 'data'),
     State('toggle-state', 'data'),
     Input('theme-button', 'n_clicks'))
@@ -430,6 +437,11 @@ def update_style(n_clicks, data):
         'width': '300px',
     }
 
+    drop_style = {
+        'backgroundColor': 'black',
+        'color' : 'black',
+    }
+
     if n_clicks is None:
         bg_color = 'black'
         font_color = 'white'
@@ -437,9 +449,11 @@ def update_style(n_clicks, data):
     else:
         if data % 2 == 0:
             bg_color = 'white'
+            drop_bg = 'white'
             font_color = 'black'
         else:
             bg_color = 'black'
+            drop_bg = 'black'
             font_color = 'white'
 
         h1_style={'color': font_color}
@@ -458,7 +472,19 @@ def update_style(n_clicks, data):
             }
         }
         
-        return {'backgroundColor': bg_color, 'color': font_color}, h1_style,h2_style,checkbox_style,tab_style, tab_style, tab_style, tab_style, data
+        drop_style = {
+        'backgroundColor':drop_bg,
+        'color':'black',
+        'option': {'color': 'black'},
+         'single': {'color':'black'},
+        'control': {'backgroundColor': bg_color},
+        'valueContainer': {
+            'color': font_color,
+            'backgroundColor': bg_color
+        },
+        }
+        
+        return {'backgroundColor': bg_color, 'color': font_color}, h1_style,h2_style,checkbox_style,tab_style, tab_style, tab_style, tab_style,drop_style,drop_style,data
 
 @app.callback(
     Output('world-graph', 'figure'),
@@ -556,22 +582,13 @@ def update_graphs_1(selected_year,all,animate, data, n_clicks):
         scatter_fig.update_traces(textfont=dict(family='sans-serif', size=16, color='lightgray'))
         scatter_fig.update_coloraxes(showscale=True)
 
-        # print(fig1.frames)
-        # print(scatter_fig.frames)
-        # for frame_x in scatter_fig.frames:
-        #     for frame_y in fig1.frames:
-        #         frame_y.data = frame_y.data + frame_x.data
-        # for i in scatter_fig.data:
-        #     fig1.add_trace(i)
+
 
         for fe, fne in zip(fig1.frames, scatter_fig.frames):
             # for t in fne.data:
             #     t.update(marker_color= "colors")
             fe.update(data = fe.data + fne.data)
-        # print(fig1.frames)
-        # fig1.layout.legendgroup2 = scatter_fig.layout.
-        # fig1.data[0].legendgroup= scatter_fig.data[0].legendgroup
-        # fig1.update_layout(coloraxis_colorbar_x=-0.15)
+
     else:
 
         fig1 = px.choropleth(filtered_df, geojson="https://raw.githubusercontent.com/python-visualization/folium/master/examples/data/world-countries.json",
@@ -584,10 +601,10 @@ def update_graphs_1(selected_year,all,animate, data, n_clicks):
         scatter_fig = px.scatter_geo(filtered_df_1, lat=filtered_df_1.latitudes, lon=filtered_df_1.longitudes,hover_name = "Area", hover_data=["Total", "longitudes", "latitudes"], 
                                 projection = 'natural earth',color="Nation", color_discrete_sequence = point_colors , animation_group=filtered_df_1.Area,text="Total_str", custom_data=["Total_str"])
     
-        scatter_fig.update_traces(marker=dict(size=30,opacity = 0.95, line=dict(width=1, color='white')))
+        scatter_fig.update_traces(marker=dict(size=35,opacity = 0.95, line=dict(width=1, color='white')))
         scatter_fig.update_layout(margin={"r": 0, "t": 0, "l": 0, "b": 0})
-        scatter_fig.update_layout(legend=dict(title='Whaling Locations',font=dict(family='sans-serif',size=14)))
-        scatter_fig.update_traces(marker=dict(size=20),selector=dict(mode='legend'))
+        scatter_fig.update_layout(legend=dict(title='Whaling Locations',font=dict(family='sans-serif',size=13)))
+        scatter_fig.update_traces(marker=dict(size=30),selector=dict(mode='legend'))
                                 
         scatter_fig.update_traces(textfont=dict(family='sans-serif', size=9, color='white'))
         scatter_fig.update_coloraxes(showscale=True)
@@ -595,38 +612,15 @@ def update_graphs_1(selected_year,all,animate, data, n_clicks):
         for i in scatter_fig.data:
             fig1.add_trace(i)
 
-        fig1.update_layout(title=f'Countries Involved and Whaling Locations {titleStr}',font=dict(family='sans-serif',size=12))
+        fig1.update_layout(title=f'Nations Involved and Whaling Locations {titleStr}',font=dict(family='sans-serif',size=12))
         fig1.data[0].legendgroup= scatter_fig.data[0].legendgroup
         fig1.update_layout(coloraxis_colorbar_x=-0.15)
         fig1.update_layout(coloraxis_colorbar=dict(title=dict(text='Total by Nation')))
         fig1.update_layout(legend=dict(title='Nation Involved in Area',font=dict(family='sans-serif',size=12)))
 
-
     heat_map = px.imshow(df_heat_year, color_continuous_scale=px.colors.sequential.YlOrRd, origin='lower',text_auto = True,template=ex_template, width = width_h, height =height_h)
     heat_map.update_layout(title=f'Type of Whale and Nation responsible {titleStr}',font=dict(family='sans-serif',size=12))
-    # bar_chart = px.bar(filtered_df_2,x="Species",y="Count",barmode='stack', template=ex_template)
-    # bar_chart.update_layout(title=f'Species Lost in Year {selected_year}')
-    # bar_chart.update_traces(marker_color='#D34336')
-    # # df = px.data.medals_wide(indexed=True)
-
-
-        # fig1.update_layout(
-    #     geo=dict(
-    #         lonaxis=dict(
-    #             range=[-180, 180],
-    #             tick0=[-180, -90, 0, 90, 180]
-    #         ),
-    #         lataxis=dict(
-    #             range=[-90, 90],
-    #             tick0=[-90, -60, -30, 0, 30, 60, 90]
-    #         )
-    #     )
-    # )
     
-    # fig1.update_geos(showocean = True, oceancolor='#f9f9f9')
-    
-    
-    # heat_map2 = px.imshow(df_heat_area, color_continuous_scale='RdBu_r', origin='lower',text_auto = True,template=ex_template)
     return fig1,bar_chart2,heat_map
 
 
@@ -652,10 +646,20 @@ def update_graphs_2(selected_nation,n_clicks,data):
     traces = []
     for value in selected_nation:
         trend = df[df['CODE'] == value].reset_index()
-        poly = np.polyfit(trend['Year'], trend['Total'], 5)
-        trend['polyFit'] = np.polyval(poly,trend['Year'])
-        polyFig = px.scatter(trend, x='Year', y='Total',template = ex_template,color= trend.CODE,color_discrete_map=colors)
-        polyFig.add_traces(px.line(trend, x='Year', y='polyFit',template = ex_template,color= trend.CODE,color_discrete_map=colors).data[0])
+        polyFig=go.Figure()
+        if(value == 'JPN'):
+            polyFig = px.scatter(trend, x='Year', y='Total',color= trend.CODE,color_discrete_map=colors,log_y=True,trendline="lowess",trendline_options=dict(frac=0.46))
+        elif(value == 'NOR'):
+            polyFig = px.scatter(trend, x='Year', y='Total',color= trend.CODE,color_discrete_map=colors,log_y=True,trendline="lowess",trendline_options=dict(frac=0.28))
+        elif(value == 'RUS' ):
+            polyFig = px.scatter(trend, x='Year', y='Total',color= trend.CODE,color_discrete_map=colors,log_y=True,trendline="lowess",trendline_options=dict(frac=0.23))
+        else:
+            polyFig = px.scatter(trend, x='Year', y='Total',color= trend.CODE,color_discrete_map=colors,log_y=True,trendline="lowess")
+        
+        polyFig.data = [t for t in polyFig.data if t.mode == "lines"]
+        
+        polyFig.add_traces(px.line(trend, x='Year', y='Total',color= trend.CODE,color_discrete_map=colors,log_y=True, symbol = 'CODE',symbol_sequence=['circle'],line_dash_sequence=['dash']).data[0])
+       
         traces.append(polyFig)
         # print(traces)
     for trace in traces:
@@ -696,7 +700,6 @@ def update_graphs_3(selected_year_2,all, data,n_clicks,):
     if(len(all) == 1):
         stackedCluster = stacked_total
         titleStr = '- Total Across All Years'
-    # print(stackedCluster)
 
     stackedCluster_melted= pd.melt(stackedCluster, id_vars=['Type', 'CODE'], var_name='Whale', value_name='Number')
     df_filtered_stack = stackedCluster_melted[stackedCluster_melted['Number'] != 0]
@@ -728,7 +731,7 @@ def update_graphs_3(selected_year_2,all, data,n_clicks,):
             go.Bar(x=[plot_df.CODE, plot_df.Whale], y=plot_df.log_scale, name=r, marker_color=c,hovertext = r),
         )
         
-    stackedBar.update_layout(title=f'Type and Species of Whales,by Country {titleStr}',template=ex_template)
+    stackedBar.update_layout(title=f'Type and Species of Whales,by Nation {titleStr}',template=ex_template)
 
     return stackedBar
 
@@ -756,12 +759,12 @@ def update_graphs_4(n_clicks,decade_num, data):
     decade_dataFrame = pd.DataFrame.from_dict(polarPlot.decades_dict[decade], orient='index')
     
     index = list(polarPlot.decades_dict[decade].keys())
-    decade_dataFrame['Country'] = index
+    decade_dataFrame['Nation'] = index
 
     # decade_dataFrame['Endangered'] = 
     # Join the datasets based on the common column
 
-    decadeMelted = pd.melt(decade_dataFrame, id_vars=['Country'], var_name='Whale')
+    decadeMelted = pd.melt(decade_dataFrame, id_vars=['Nation'], var_name='Whale')
     # print(decadeMelted)
     decadeMelted['log_scale']= np.where(decadeMelted['value'] == 0, 0, np.log10(decadeMelted['value']))
     polarBar = go.Figure()
@@ -770,14 +773,11 @@ def update_graphs_4(n_clicks,decade_num, data):
 
     list_colors = px.colors.sequential.YlOrRd[2:]
     categories = ['UN', 'LC', 'NT*', 'VU', 'LC', 'NE', 'EN']
-    # colors = ['rgb(254,217,118)', 'rgb(254,178,76)', 'rgb(253,141,60)', 'rgb(252,78,42)', 'rgb(227,26,28)', 'rgb(189,0,38)', 'rgb(128,0,38)']
-    # color_map = {category: color for category, color in zip(categories, colors)}
-    # color_map = {'UN': 'rgb(254,217,118)', 'LC': 'rgb(227,26,28)', 'NT*': 'rgb(253,141,60)', 'VU': 'rgb(252,78,42)', 'NE': 'rgb(189,0,38)', 'EN': 'rgb(128,0,38)'}
 
-    polarBar = px.bar_polar(decadeMelted, r='value', theta='Country', color='RedList',
+    polarBar = px.bar_polar(decadeMelted, r='value', theta='Nation', color='RedList',
                     # color_discrete_sequence=color_map,
                     template=ex_template,log_r = True,
-                    labels={'value': 'Number of Whales'},width=800, height=600, hover_data=["Whale", "value"],color_discrete_sequence = list_colors,category_orders={'RedList': categories})
+                    labels={'value': 'Number of Whales'},width=800, height=550, hover_data=["Whale", "value"],color_discrete_sequence = list_colors,category_orders={'RedList': categories})
     polarBar.update_traces(text=decadeMelted['Whale'],marker=dict(line=dict(width=1, color='black')))
     polarBar.update_polars(radialaxis_gridcolor=grid_color)
     polarBar.update_polars(radialaxis=dict(dtick=1))
@@ -795,23 +795,62 @@ def update_graphs_4(n_clicks,decade_num, data):
                                 y=-0.2,
                                 xanchor='right',
                                 x=1),
-                    title=dict(text='Whaling over decade {0}, by Species and Country'.format(decade),
+                    title=dict(text='Whaling over decade {0}, by Species and Nation'.format(decade),
                                 font=dict(size=24)),
                     margin=dict(t=100, b=100, l=100, r=100))
     
     return polarBar
 
 
+
+@app.callback(
+   Output('qq-plot', 'figure'),
+    Input('toggle-state', 'data'),
+    Input('dropDown1', 'value'),
+    Input('dropDown2', 'value'),
+    Input('theme-button', 'n_clicks')
+)
+
+def update_graphs_5(n_clicks,species1, species2,data):
+
+    if(data % 2 == 0):
+        ex_template = 'plotly_white'
+        colour = 'black'
+    else:
+        ex_template = 'plotly_dark'
+        colour = 'white'
+
+    qq_data = original_df.groupby(['Year'])['Fin', 'Sperm', 'Humpback', 'Sei', 'Bryde\'s', 'Minke', 'Gray', 'Bowhead'].sum().reset_index()
+
+    q1 = qq_data[species1]
+    q2 = qq_data[species2]
+
+    quantiles1 = sm.ProbPlot(q1)
+    quantiles2 = sm.ProbPlot(q2)
+
+
+    fig, ax1 = plt.subplots()
+    qqplot_2samples(quantiles1, quantiles2, line='45',ax=ax1)
+    ax1.set_xlabel(f'{species1} Catch Distribution', color=colour)
+    ax1.set_ylabel(f'{species2} Catch Distribution', color=colour)
+    # Convert Matplotlib figure to Plotly figure
+    plotly_fig = mpl_to_plotly(fig)
+    plotly_fig.update_layout(template=ex_template,title = "Whale Catch Data Species Distribution Comparison")
+    plotly_fig.update_traces(line=dict(color=px.colors.sequential.haline[4]))
+
+    return plotly_fig
+
+
 app.layout = html.Div(id = 'dashboard', children = [ 
-    html.Button('Change Theme', id='theme-button', n_clicks= 0),
+    html.Button('Change Theme', id='theme-button', n_clicks= 0, style={'position': 'absolute', 'top': '0', 'right': '0'}),
     dcc.Store(id='toggle-state', data=False),
-    html.H1('Whaling Global Data Visualisation', id = 'heading_1'),
+    html.H1('Commercial Whaling 1985-2018', id = 'heading_1'),
     #Put these two divisions into a panel
     dcc.Tabs(id='tabs', value='tab-1',  children=[
-        dcc.Tab(id = 'tab-1', label='Tab 1', value='tab-1', selected_style = tab_selected_style,
+        dcc.Tab(id = 'tab-1', label='World Map', value='tab-1', selected_style = tab_selected_style,
 children=[
             # html.Div([
-                html.H3('Aggregate Data', id = 'heading_2'),
+                html.H3('Geographic Visualisation', id = 'heading_2'),
                 html.Div(children = [
                     html.Div([
                       html.Div(  
@@ -851,7 +890,7 @@ children=[
                 ]),
             ]),
         ]),
-        dcc.Tab(id = 'tab-2', label='Tab 2', value='tab-2', selected_style = tab_selected_style, children=[
+        dcc.Tab(id = 'tab-2', label='Aggregate Data', value='tab-2', selected_style = tab_selected_style, children=[
             html.Div([
                 
                 dcc.Checklist(
@@ -862,11 +901,7 @@ children=[
                     value=['JPN','RUS','KOR'], style = check_list_style
                 ),
                 dcc.Graph(id='aggregate-graph'),
-                dcc.Graph(id='box-graph')
             ]),
-        ]),
-        dcc.Tab(id = 'tab-3',label='Tab 3', value='tab-3', selected_style = tab_selected_style, children=[
-            html.Div(children = [
                 html.Div([
                     html.Div(dcc.Slider(
                         id='slider_2',
@@ -886,10 +921,9 @@ children=[
 
                     dcc.Graph(id='stacked-map')
                     ]),
-                ]),
-            ]),
-            
-            dcc.Tab(id = 'tab-4', label='Tab 4', value='tab-4', selected_style = tab_selected_style, children=[
+        ]),
+
+            dcc.Tab(id = 'tab-3', label='Endangered Species', value='tab-3', selected_style = tab_selected_style, children=[
                 html.Div([
                     dcc.Slider(
                         id='slider_3',
@@ -909,6 +943,34 @@ children=[
                                 'justify-content': 'center'
                                 }
                         ),
+                    ]),
+                 ]),
+            
+            dcc.Tab(id = 'tab-4', label='Quantile Distribution', value='tab-4', selected_style = tab_selected_style, children=[
+                html.Div([
+                        html.Div(dcc.Dropdown(
+                        id ='dropDown1',
+                        options=['Fin','Sperm','Humpback','Sei','Bryde\'s','Minke','Gray','Bowhead'],
+                        value='Fin'
+                        ),style={'width': '50%', 'display': 'inline-block','fontSize': '15px'}),
+                        
+                        html.Div(dcc.Dropdown(
+                        id ='dropDown2',
+                        options=['Fin','Sperm','Humpback','Sei','Bryde\'s','Minke','Gray','Bowhead'],
+                        value='Sei'
+                        ),style={'width': '50%', 'display': 'inline-block','fontSize': '15px'}),
+
+                        html.Div(
+                            dcc.Graph(id='qq-plot'),
+                            style={
+                                'width': '50%',
+                                'margin': 'auto',
+                                'display': 'flex',
+                                'align-items': 'center',
+                                'justify-content': 'center'
+                                }
+                        ),
+                        dcc.Graph(id='box-graph')
                     ]),
                  ]),
              ]),
