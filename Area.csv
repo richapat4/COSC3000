@@ -1,0 +1,65 @@
+,Area,Whale,Number,Log_scale
+0,Alaska,Fin,0.0,0.0
+1,Antarctic,Fin,0.0,0.0
+2,Chukotka,Fin,0.0,0.0
+3,E. Greenland,Fin,0.0,0.0
+4,Indonesia,Fin,0.0,0.0
+5,NE Atlantic,Fin,0.0,0.0
+6,NW Canada,Fin,0.0,0.0
+7,W. Greenland,Fin,18.0,1.255272505103306
+8,Alaska,Sperm,0.0,0.0
+9,Antarctic,Sperm,0.0,0.0
+10,Chukotka,Sperm,0.0,0.0
+11,E. Greenland,Sperm,0.0,0.0
+12,Indonesia,Sperm,14.0,1.146128035678238
+13,NE Atlantic,Sperm,0.0,0.0
+14,NW Canada,Sperm,0.0,0.0
+15,W. Greenland,Sperm,0.0,0.0
+16,Alaska,Humpback,0.0,0.0
+17,Antarctic,Humpback,0.0,0.0
+18,Chukotka,Humpback,0.0,0.0
+19,E. Greenland,Humpback,1.0,0.0
+20,Indonesia,Humpback,0.0,0.0
+21,NE Atlantic,Humpback,0.0,0.0
+22,NW Canada,Humpback,0.0,0.0
+23,W. Greenland,Humpback,0.0,0.0
+24,Alaska,Sei,0.0,0.0
+25,Antarctic,Sei,0.0,0.0
+26,Chukotka,Sei,0.0,0.0
+27,E. Greenland,Sei,0.0,0.0
+28,Indonesia,Sei,0.0,0.0
+29,NE Atlantic,Sei,0.0,0.0
+30,NW Canada,Sei,0.0,0.0
+31,W. Greenland,Sei,0.0,0.0
+32,Alaska,Bryde's,0.0,0.0
+33,Antarctic,Bryde's,0.0,0.0
+34,Chukotka,Bryde's,0.0,0.0
+35,E. Greenland,Bryde's,0.0,0.0
+36,Indonesia,Bryde's,0.0,0.0
+37,NE Atlantic,Bryde's,0.0,0.0
+38,NW Canada,Bryde's,0.0,0.0
+39,W. Greenland,Bryde's,0.0,0.0
+40,Alaska,Minke,0.0,0.0
+41,Antarctic,Minke,288.0,2.459392487759231
+42,Chukotka,Minke,0.0,0.0
+43,E. Greenland,Minke,7.0,0.8450980400142568
+44,Indonesia,Minke,0.0,0.0
+45,NE Atlantic,Minke,1.0,0.0
+46,NW Canada,Minke,0.0,0.0
+47,W. Greenland,Minke,99.0,1.99563519459755
+48,Alaska,Gray,0.0,0.0
+49,Antarctic,Gray,0.0,0.0
+50,Chukotka,Gray,169.0,2.2278867046136734
+51,E. Greenland,Gray,0.0,0.0
+52,Indonesia,Gray,0.0,0.0
+53,NE Atlantic,Gray,0.0,0.0
+54,NW Canada,Gray,0.0,0.0
+55,W. Greenland,Gray,0.0,0.0
+56,Alaska,Bowhead,47.0,1.6720978579357175
+57,Antarctic,Bowhead,0.0,0.0
+58,Chukotka,Bowhead,0.0,0.0
+59,E. Greenland,Bowhead,0.0,0.0
+60,Indonesia,Bowhead,0.0,0.0
+61,NE Atlantic,Bowhead,0.0,0.0
+62,NW Canada,Bowhead,1.0,0.0
+63,W. Greenland,Bowhead,0.0,0.0
