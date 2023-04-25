@@ -1,65 +1,137 @@
-,Area,Whale,Number,Log_scale
-0,Alaska,Fin,0.0,0.0
-1,Antarctic,Fin,0.0,0.0
-2,Chukotka,Fin,0.0,0.0
-3,E. Greenland,Fin,0.0,0.0
-4,Indonesia,Fin,0.0,0.0
-5,NE Atlantic,Fin,0.0,0.0
-6,NW Canada,Fin,0.0,0.0
-7,W. Greenland,Fin,18.0,1.255272505103306
-8,Alaska,Sperm,0.0,0.0
-9,Antarctic,Sperm,0.0,0.0
-10,Chukotka,Sperm,0.0,0.0
-11,E. Greenland,Sperm,0.0,0.0
-12,Indonesia,Sperm,14.0,1.146128035678238
-13,NE Atlantic,Sperm,0.0,0.0
-14,NW Canada,Sperm,0.0,0.0
-15,W. Greenland,Sperm,0.0,0.0
-16,Alaska,Humpback,0.0,0.0
-17,Antarctic,Humpback,0.0,0.0
-18,Chukotka,Humpback,0.0,0.0
-19,E. Greenland,Humpback,1.0,0.0
-20,Indonesia,Humpback,0.0,0.0
-21,NE Atlantic,Humpback,0.0,0.0
-22,NW Canada,Humpback,0.0,0.0
-23,W. Greenland,Humpback,0.0,0.0
-24,Alaska,Sei,0.0,0.0
-25,Antarctic,Sei,0.0,0.0
-26,Chukotka,Sei,0.0,0.0
-27,E. Greenland,Sei,0.0,0.0
-28,Indonesia,Sei,0.0,0.0
-29,NE Atlantic,Sei,0.0,0.0
-30,NW Canada,Sei,0.0,0.0
-31,W. Greenland,Sei,0.0,0.0
-32,Alaska,Bryde's,0.0,0.0
-33,Antarctic,Bryde's,0.0,0.0
-34,Chukotka,Bryde's,0.0,0.0
-35,E. Greenland,Bryde's,0.0,0.0
-36,Indonesia,Bryde's,0.0,0.0
-37,NE Atlantic,Bryde's,0.0,0.0
-38,NW Canada,Bryde's,0.0,0.0
-39,W. Greenland,Bryde's,0.0,0.0
-40,Alaska,Minke,0.0,0.0
-41,Antarctic,Minke,288.0,2.459392487759231
-42,Chukotka,Minke,0.0,0.0
-43,E. Greenland,Minke,7.0,0.8450980400142568
-44,Indonesia,Minke,0.0,0.0
-45,NE Atlantic,Minke,1.0,0.0
-46,NW Canada,Minke,0.0,0.0
-47,W. Greenland,Minke,99.0,1.99563519459755
-48,Alaska,Gray,0.0,0.0
-49,Antarctic,Gray,0.0,0.0
-50,Chukotka,Gray,169.0,2.2278867046136734
-51,E. Greenland,Gray,0.0,0.0
-52,Indonesia,Gray,0.0,0.0
-53,NE Atlantic,Gray,0.0,0.0
-54,NW Canada,Gray,0.0,0.0
-55,W. Greenland,Gray,0.0,0.0
-56,Alaska,Bowhead,47.0,1.6720978579357175
-57,Antarctic,Bowhead,0.0,0.0
-58,Chukotka,Bowhead,0.0,0.0
-59,E. Greenland,Bowhead,0.0,0.0
-60,Indonesia,Bowhead,0.0,0.0
-61,NE Atlantic,Bowhead,0.0,0.0
-62,NW Canada,Bowhead,1.0,0.0
-63,W. Greenland,Bowhead,0.0,0.0
+,Area,Whale,Number
+0,Alaska,Fin,0.0
+1,Antarctic,Fin,18.0
+2,Azores,Fin,0.0
+3,Chukotka,Fin,0.0
+4,E. Greenland,Fin,1.0
+5,Iceland,Fin,0.0
+6,Indonesia,Fin,0.0
+7,Japan,Fin,0.0
+8,Korea,Fin,1.0
+9,NE Atlantic,Fin,0.0
+10,NE Canada,Fin,0.0
+11,NW Canada,Fin,0.0
+12,NW Pacific,Fin,0.0
+13,USA W coast,Fin,0.0
+14,W. Greenland,Fin,382.0
+15,W. Iceland,Fin,1144.0
+16,W.Indies,Fin,0.0
+17,Alaska,Sperm,0.0
+18,Antarctic,Sperm,0.0
+19,Azores,Sperm,3.0
+20,Chukotka,Sperm,0.0
+21,E. Greenland,Sperm,0.0
+22,Iceland,Sperm,0.0
+23,Indonesia,Sperm,542.0
+24,Japan,Sperm,388.0
+25,Korea,Sperm,0.0
+26,NE Atlantic,Sperm,0.0
+27,NE Canada,Sperm,0.0
+28,NW Canada,Sperm,0.0
+29,NW Pacific,Sperm,56.0
+30,USA W coast,Sperm,0.0
+31,W. Greenland,Sperm,0.0
+32,W. Iceland,Sperm,0.0
+33,W.Indies,Sperm,0.0
+34,Alaska,Humpback,1.0
+35,Antarctic,Humpback,0.0
+36,Azores,Humpback,0.0
+37,Chukotka,Humpback,0.0
+38,E. Greenland,Humpback,1.0
+39,Iceland,Humpback,0.0
+40,Indonesia,Humpback,1.0
+41,Japan,Humpback,0.0
+42,Korea,Humpback,0.0
+43,NE Atlantic,Humpback,0.0
+44,NE Canada,Humpback,0.0
+45,NW Canada,Humpback,0.0
+46,NW Pacific,Humpback,0.0
+47,USA W coast,Humpback,0.0
+48,W. Greenland,Humpback,76.0
+49,W. Iceland,Humpback,0.0
+50,W.Indies,Humpback,42.0
+51,Alaska,Sei,0.0
+52,Antarctic,Sei,0.0
+53,Azores,Sei,0.0
+54,Chukotka,Sei,0.0
+55,E. Greenland,Sei,0.0
+56,Iceland,Sei,0.0
+57,Indonesia,Sei,0.0
+58,Japan,Sei,0.0
+59,Korea,Sei,0.0
+60,NE Atlantic,Sei,0.0
+61,NE Canada,Sei,0.0
+62,NW Canada,Sei,0.0
+63,NW Pacific,Sei,1628.0
+64,USA W coast,Sei,0.0
+65,W. Greenland,Sei,7.0
+66,W. Iceland,Sei,70.0
+67,W.Indies,Sei,0.0
+68,Alaska,Bryde's,0.0
+69,Antarctic,Bryde's,0.0
+70,Azores,Bryde's,0.0
+71,Chukotka,Bryde's,0.0
+72,E. Greenland,Bryde's,0.0
+73,Iceland,Bryde's,0.0
+74,Indonesia,Bryde's,0.0
+75,Japan,Bryde's,635.0
+76,Korea,Bryde's,1.0
+77,NE Atlantic,Bryde's,0.0
+78,NE Canada,Bryde's,0.0
+79,NW Canada,Bryde's,0.0
+80,NW Pacific,Bryde's,733.0
+81,USA W coast,Bryde's,0.0
+82,W. Greenland,Bryde's,0.0
+83,W. Iceland,Bryde's,0.0
+84,W.Indies,Bryde's,2.0
+85,Alaska,Minke,4.0
+86,Antarctic,Minke,21650.0
+87,Azores,Minke,0.0
+88,Chukotka,Minke,0.0
+89,E. Greenland,Minke,273.0
+90,Iceland,Minke,653.0
+91,Indonesia,Minke,0.0
+92,Japan,Minke,2120.0
+93,Korea,Minke,212.0
+94,NE Atlantic,Minke,14327.0
+95,NE Canada,Minke,0.0
+96,NW Canada,Minke,0.0
+97,NW Pacific,Minke,1571.0
+98,USA W coast,Minke,0.0
+99,W. Greenland,Minke,4699.0
+100,W. Iceland,Minke,0.0
+101,W.Indies,Minke,0.0
+102,Alaska,Gray,8.0
+103,Antarctic,Gray,0.0
+104,Azores,Gray,0.0
+105,Chukotka,Gray,3729.0
+106,E. Greenland,Gray,0.0
+107,Iceland,Gray,0.0
+108,Indonesia,Gray,0.0
+109,Japan,Gray,0.0
+110,Korea,Gray,0.0
+111,NE Atlantic,Gray,0.0
+112,NE Canada,Gray,0.0
+113,NW Canada,Gray,0.0
+114,NW Pacific,Gray,0.0
+115,USA W coast,Gray,2.0
+116,W. Greenland,Gray,0.0
+117,W. Iceland,Gray,0.0
+118,W.Indies,Gray,0.0
+119,Alaska,Bowhead,1601.0
+120,Antarctic,Bowhead,0.0
+121,Azores,Bowhead,0.0
+122,Chukotka,Bowhead,24.0
+123,E. Greenland,Bowhead,0.0
+124,Iceland,Bowhead,0.0
+125,Indonesia,Bowhead,0.0
+126,Japan,Bowhead,0.0
+127,Korea,Bowhead,0.0
+128,NE Atlantic,Bowhead,0.0
+129,NE Canada,Bowhead,37.0
+130,NW Canada,Bowhead,2.0
+131,NW Pacific,Bowhead,0.0
+132,USA W coast,Bowhead,0.0
+133,W. Greenland,Bowhead,8.0
+134,W. Iceland,Bowhead,0.0
+135,W.Indies,Bowhead,0.0
