@@ -567,6 +567,7 @@ class GraphicsEngine:
         glUniform1i(glGetUniformLocation(self.bloom_resolve_shader, "material"), 0)
         glUniform1i(glGetUniformLocation(self.bloom_resolve_shader, "bright_material"), 1)
 
+
     def query_shader_locations(self):
 
         #attributes shared by both shaders
@@ -1035,7 +1036,6 @@ class AdvancedMaterial:
 
     
     def __init__(self, filename, filetype):
-
 
         self.textures = []
 

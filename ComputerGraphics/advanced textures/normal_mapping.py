@@ -209,7 +209,7 @@ class App:
 
         self.scene = Scene()
 
-        self.engine = Engine(self.scene)
+        self.engine = Engine(self.scene,self.window)
 
         self.mainLoop()
 
@@ -280,15 +280,15 @@ class App:
 class Engine:
 
 
-    def __init__(self, scene):
+    def __init__(self, scene, window):
 
         #initialise opengl
         glClearColor(0.1, 0.1, 0.1, 1)
         glEnable(GL_DEPTH_TEST)
         glEnable(GL_CULL_FACE)
         glCullFace(GL_BACK)
-        
-        self.create_framebuffers()
+
+        self.create_framebuffers(window)
         self.create_assets(scene)
         self.set_up_shaders()
 
@@ -296,6 +296,7 @@ class Engine:
         #create assets
         self.wood_texture = Material("goldBrick", "png")
         self.cube_mesh = ObjMesh("models/solar.obj")
+
         #generate position buffer
         self.cubeTransforms = np.array([
             pyrr.matrix44.create_identity(dtype = np.float32)
@@ -328,6 +329,8 @@ class Engine:
         glVertexAttribDivisor(8,1)
 
 
+        self.screen = TexturedQuad(0, 0, 1, 1)
+
 
     def set_up_shaders(self):
         self.shaderTextured = self.createShader(
@@ -339,22 +342,27 @@ class Engine:
             "shaders\\simple_3d_fragment.txt"
         )
         
+        #SCREEN SHADER 
+        self.screen_shader = self.createShader("shaders/simple_post_vertex.txt", "shaders/screen_fragment.txt")
+        glUseProgram(self.screen_shader)
+        glUniform1i(glGetUniformLocation(self.screen_shader, "material"), 0)
+        glUniform1i(glGetUniformLocation(self.screen_shader, "bright_material"), 1)
 
         #ADDING BLOOM
-        # self.bloom_blur_shader = self.createShader("shaders/simple_post_vertex.txt", "shaders/bloom_blur_fragment.txt")
-        # glUseProgram(self.bloom_blur_shader)
-        # glUniform1i(glGetUniformLocation(self.bloom_blur_shader, "material"), 0)
-        # glUniform1i(glGetUniformLocation(self.bloom_blur_shader, "bright_material"), 1)
+        self.bloom_blur_shader = self.createShader("shaders/simple_post_vertex.txt", "shaders/bloom_blur_fragment.txt")
+        glUseProgram(self.bloom_blur_shader)
+        glUniform1i(glGetUniformLocation(self.bloom_blur_shader, "material"), 0)
+        glUniform1i(glGetUniformLocation(self.bloom_blur_shader, "bright_material"), 1)
 
-        # self.bloom_transfer_shader = self.createShader("shaders/simple_post_vertex.txt", "shaders/bloom_transfer_fragment.txt")
-        # glUseProgram(self.bloom_transfer_shader)
-        # glUniform1i(glGetUniformLocation(self.bloom_transfer_shader, "material"), 0)
-        # glUniform1i(glGetUniformLocation(self.bloom_transfer_shader, "bright_material"), 1)
+        self.bloom_transfer_shader = self.createShader("shaders/simple_post_vertex.txt", "shaders/bloom_transfer_fragment.txt")
+        glUseProgram(self.bloom_transfer_shader)
+        glUniform1i(glGetUniformLocation(self.bloom_transfer_shader, "material"), 0)
+        glUniform1i(glGetUniformLocation(self.bloom_transfer_shader, "bright_material"), 1)
 
-        # self.bloom_resolve_shader = self.createShader("shaders/simple_post_vertex.txt", "shaders/bloom_resolve_fragment.txt")
-        # glUseProgram(self.bloom_resolve_shader)
-        # glUniform1i(glGetUniformLocation(self.bloom_resolve_shader, "material"), 0)
-        # glUniform1i(glGetUniformLocation(self.bloom_resolve_shader, "bright_material"), 1)
+        self.bloom_resolve_shader = self.createShader("shaders/simple_post_vertex.txt", "shaders/bloom_resolve_fragment.txt")
+        glUseProgram(self.bloom_resolve_shader)
+        glUniform1i(glGetUniformLocation(self.bloom_resolve_shader, "material"), 0)
+        glUniform1i(glGetUniformLocation(self.bloom_resolve_shader, "bright_material"), 1)
 
 
         projection_transform = pyrr.matrix44.create_perspective_projection(
@@ -434,12 +442,13 @@ class Engine:
             ), 3
         )
 
-    # #ADDED BRIGHT MATERIAL TO FRAGMENT
-    #     glUniform1i(
-    #         glGetUniformLocation(
-    #             self.shaderTextured, "bright_material"
-    #             ), 4
-    #         )
+    #ADDED BRIGHT MATERIAL TO FRAGMENT
+        glUniform1i(
+            glGetUniformLocation(
+                self.shaderTextured, "bright_material"
+                ), 4
+            )
+
 
         glUseProgram(self.shaderColored)
         #get shader locations
@@ -461,57 +470,19 @@ class Engine:
         )
 
 
-    def create_framebuffers(self):
-        self.fbos = []
-        self.colorBuffers = []
-        self.depthStencilBuffers = []
-        for i in range(2):
-            self.fbos.append(glGenFramebuffers(1))
-            glBindFramebuffer(GL_FRAMEBUFFER, self.fbos[i])
-        
-            new_color_buffer_0 = glGenTextures(1)
-            glBindTexture(GL_TEXTURE_2D, new_color_buffer_0)
-            glTexImage2D(
-                GL_TEXTURE_2D, 0, GL_RGB, 
-                SCREEN_WIDTH, SCREEN_HEIGHT,
-                0, GL_RGB, GL_UNSIGNED_BYTE, None
-            )
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER)
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER)
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR)
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR)
-            glBindTexture(GL_TEXTURE_2D, 0)
-            glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, 
-                                    GL_TEXTURE_2D, new_color_buffer_0, 0)
-            
-            new_color_buffer_1 = glGenTextures(1)
-            glBindTexture(GL_TEXTURE_2D, new_color_buffer_1)
-            glTexImage2D(
-                GL_TEXTURE_2D, 0, GL_RGB, 
-                SCREEN_WIDTH, SCREEN_HEIGHT,
-                0, GL_RGB, GL_UNSIGNED_BYTE, None
-            )
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER)
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER)
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR)
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR)
-            glBindTexture(GL_TEXTURE_2D, 0)
-            glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, 
-                                    GL_TEXTURE_2D, new_color_buffer_1, 0)
-            
-            self.colorBuffers.append([new_color_buffer_0, new_color_buffer_1])
-            
-            self.depthStencilBuffers.append(glGenRenderbuffers(1))
-            glBindRenderbuffer(GL_RENDERBUFFER, self.depthStencilBuffers[i])
-            glRenderbufferStorage(
-                GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, SCREEN_WIDTH, SCREEN_HEIGHT
-            )
-            glBindRenderbuffer(GL_RENDERBUFFER,0)
-            glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, 
-                                        GL_RENDERBUFFER, self.depthStencilBuffers[i])
-
-            glBindFramebuffer(GL_FRAMEBUFFER, 0)
     
+
+
+    def create_framebuffers(self,window):
+
+        (self.w,self.h) = glfw.get_framebuffer_size(window)
+
+        self.colorBuffers = [Colorbuffer(self.w, self.h), Colorbuffer(self.w, self.h)]
+        self.depthBuffer = DepthStencilbuffer(self.w, self.h)
+        self.framebuffers = Framebuffer(
+            colorAttachments = [self.colorBuffers[0], self.colorBuffers[1]], 
+            depthBuffer = self.depthBuffer
+        )
 
     def createShader(self, vertexFilepath, fragmentFilepath):
 
@@ -528,8 +499,16 @@ class Engine:
         return shader
 
     def draw(self, scene):
-        #refresh screen
+
+        glBindFramebuffer(GL_FRAMEBUFFER, self.framebuffers.fbo)
+        glDrawBuffers(2, (GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1))
+        glClearColor(0,0,0.5,0)
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
+        glEnable(GL_DEPTH_TEST)
+    
+        #refresh screen
+      
+        #glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
 
         view_transform = pyrr.matrix44.create_look_at(
             eye = scene.player.position,
@@ -588,6 +567,25 @@ class Engine:
             glUniform3fv(self.colorLocUntextured, 1, light.color)
             glBindVertexArray(self.light_mesh.vao)
             glDrawArrays(GL_TRIANGLES, 0, self.light_mesh.vertex_count)
+        
+
+            glBindFramebuffer(GL_FRAMEBUFFER, 0)
+            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
+            glDisable(GL_DEPTH_TEST)
+
+            glUseProgram(self.bloom_blur_shader)
+            glActiveTexture(GL_TEXTURE0)
+            glBindTexture(GL_TEXTURE_2D, self.colorBuffers[0].texture)
+            glActiveTexture(GL_TEXTURE1)
+            glBindTexture(GL_TEXTURE_2D, self.colorBuffers[1].texture)
+            glBindVertexArray(self.screen.vao)
+
+            glUseProgram(self.bloom_transfer_shader)
+            glActiveTexture(GL_TEXTURE0)
+            glBindTexture(GL_TEXTURE_2D, self.colorBuffers[0].texture)
+            glActiveTexture(GL_TEXTURE1)
+            glBindTexture(GL_TEXTURE_2D, self.colorBuffers[1].texture)
+            glBindVertexArray(self.screen.vao)
 
         glFlush()
 
@@ -741,6 +739,132 @@ class UntexturedCubeMesh:
     def destroy(self):
         glDeleteVertexArrays(1, (self.vao,))
         glDeleteBuffers(1, (self.vbo,))
+
+
+
+class TexturedQuad:
+
+    def __init__(self, x, y, w, h):
+        self.vertices = (
+            x - w, y + h, 0, 1,
+            x - w, y - h, 0, 0,
+            x + w, y - h, 1, 0,
+
+            x - w, y + h, 0, 1,
+            x + w, y - h, 1, 0,
+            x + w, y + h, 1, 1
+        )
+        self.vertices = np.array(self.vertices, dtype=np.float32)
+
+        self.vertex_count = 6
+        
+        self.vao = glGenVertexArrays(1)
+        glBindVertexArray(self.vao)
+        self.vbo = glGenBuffers(1)
+        glBindBuffer(GL_ARRAY_BUFFER, self.vbo)
+        glBufferData(GL_ARRAY_BUFFER, self.vertices.nbytes, self.vertices, GL_STATIC_DRAW)
+
+        glEnableVertexAttribArray(0)
+        glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 16, ctypes.c_void_p(0))
+
+        glEnableVertexAttribArray(1)
+        glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 16, ctypes.c_void_p(8))
+    
+    def destroy(self):
+        glDeleteVertexArrays(1, (self.vao,))
+        glDeleteBuffers(1, (self.vbo,))
+
+
+
+
+class DepthStencilbuffer:
+    """
+        A simple depth buffer which
+        can be rendered to and read from.
+    """
+
+    
+    def __init__(self, w: int, h: int):
+        """
+            Initialise the framebuffer.
+
+            Parameters:
+                w: the width of the screen
+                h: the height of the screen
+        """
+
+        #create and bind, a render buffer is like a texture which can
+        # be written to and read from, but not sampled (ie. not smooth)
+        self.texture = glGenRenderbuffers(1)
+        glBindRenderbuffer(GL_RENDERBUFFER, self.texture)
+        #preallocate space, we'll use 24 bits for depth and 8 for stencil
+        glRenderbufferStorage(
+            GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, w, h
+        )
+        glBindRenderbuffer(GL_RENDERBUFFER,0)
+
+class Colorbuffer:
+    """
+        A simple color buffer which
+        can be rendered to and read from.
+    """
+
+    
+    def __init__(self, w: int, h: int):
+        """
+            Initialise the colorbuffer.
+
+            Parameters:
+                w: the width of the screen
+                h: the height of the screen
+        """
+        
+        #create and bind the color buffer
+        self.texture = glGenTextures(1)
+        glBindTexture(GL_TEXTURE_2D, self.texture)
+        #preallocate space
+        glTexImage2D(
+            GL_TEXTURE_2D, 0, GL_RGB, 
+            w, h,
+            0, GL_RGB, GL_UNSIGNED_BYTE, None
+        )
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE)
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE)
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR)
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR)
+        glBindTexture(GL_TEXTURE_2D, 0)
+    
+
+class Framebuffer:
+    """
+        A simple framebuffer object, holds a color buffer and depth buffer which
+        can be rendered to and read from.
+    """
+
+    
+    def __init__(self, 
+                 colorAttachments: list[Colorbuffer], 
+                 depthBuffer: DepthStencilbuffer):
+        """
+            Initialise the framebuffer.
+
+            Parameters:
+                w: the width of the screen
+                h: the height of the screen
+        """
+        
+        self.fbo = glGenFramebuffers(1)
+        glBindFramebuffer(GL_FRAMEBUFFER, self.fbo)
+        
+        for i,colorBuffer in enumerate(colorAttachments):
+            glFramebufferTexture2D(GL_FRAMEBUFFER, 
+                                GL_COLOR_ATTACHMENT0 + i, 
+                                GL_TEXTURE_2D, colorBuffer.texture, 0)
+        
+        glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, 
+                                    GL_RENDERBUFFER, depthBuffer.texture)
+
+        glBindFramebuffer(GL_FRAMEBUFFER, 0)
 
 class ObjMesh:
 
