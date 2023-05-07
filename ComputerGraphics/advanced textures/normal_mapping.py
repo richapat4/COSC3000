@@ -9,6 +9,10 @@ from PIL import Image, ImageOps
 
 ############################## Constants ######################################
 
+
+OBJECT_SOLAR  = 0
+OBJECT_HULL =  1
+
 SCREEN_WIDTH = 640
 SCREEN_HEIGHT = 480
 
@@ -42,7 +46,17 @@ def initialize_glfw():
 
 ##################################### Model ###################################
 
-class Cube:
+class Entity:
+
+
+    def __init__(self, position, eulers, eulerVelocity):
+
+        self.position = np.array(position, dtype=np.float32)
+        self.eulers = np.array(eulers, dtype=np.float32)
+        self.eulerVelocity = np.array(eulerVelocity, dtype=np.float32)
+
+
+class Hull:
 
 
     def __init__(self, position, eulers, eulerVelocity):
@@ -133,37 +147,43 @@ class Scene:
         j = 0
         k = 0
 
-        self.cubes = []
 
+        self.entitys: dict[int,list[Entity]] = {}
+
+        self.entitys[OBJECT_SOLAR] = []
+
+        for i in range(10):
+            position = [-1, ((-1 + i * 0.25)), -1]
+            self.entitys[OBJECT_SOLAR].append(Entity(position, [0, 90, 0], [0, 0, 0]))
+        
+        i = 0
         for i in range(15):
-            for j in range(3):
-                if i < 10:
-                    position = [-1, ((-1 + i * 0.25) + 2), (-1 + j * 0.5) + 1 + (k * 0.25)]
-                elif i > 9 and j == 1:
-                    position = [-1, ((-1 + i * 0.25) + 2), (-1 + j * 0.5) + 1 + (k * 0.25)]
-                self.cubes.append(Cube(position, [0, 90, 0], [0, 0, 0]))
-                    
-
-        for i in range(15):
-            for j in range(3):
-                if i < 10:
-                    position = [-1, ((5 + i * 0.25) + 2), (-1 + j * 0.5) + 1]
-                elif i > 9 and j == 1:
-                    position = [-1, ((5  - (k * 0.25)) + 2), (-1 + j * 0.5) + 1]
-                    k+=1
-                self.cubes.append(Cube(position, [0, 90, 0], [0, 0, 0]))
-                    
-
-        #     Cube(
-        #         position = [-1,((-1 + i * 0.25) + 2),(-1 + j * 0.5)+1], #x,y,z
-        #         eulers = [0,90,0],
-        #         eulerVelocity = [0,0,0],
-        #     )
+            position = [-1 - 0.17, ((-1 + i * 0.25)), (-1 + (1 * 0.5))]
+            self.entitys[OBJECT_SOLAR].append(Entity(position, [0, 90, 0], [0, 0, 0]))
             
-        #     for i in range(10 + (10 if j == 1 and i == 9 else 0))
-        #     for j in range(3) 
+        i = 0
+        for i in range(10):
+            position = [-1 - 0.34, ((-1 + i * 0.25)), (-1 + (2 * 0.5))]
+            self.entitys[OBJECT_SOLAR].append(Entity(position, [0, 90, 0], [0, 0, 0]))
 
-        # ]
+        k = 0
+        for i in range(15):
+            for j in range(3):
+                if i < 10:
+                    position = [-1 - (j * 0.17), ((4 + i * 0.25)), (-1 + (j * 0.5))]
+                elif i > 9 and j == 1:
+                    position = [-1 - (j * 0.17), ((4  - (k * 0.25))), (-1 + (j * 0.5))]
+                    k+=1
+                self.entitys[OBJECT_SOLAR].append(Entity(position, [0, 90, 0], [0, 0, 0]))
+                
+        self.entitys[OBJECT_HULL] = [
+            Entity(
+                position = [-1,-5,-0.5],
+                eulers = [0,90,0],
+                eulerVelocity = [0,0,0],
+            )
+        ]
+
         i = 0
         m = 0
         self.lights = []
@@ -185,13 +205,14 @@ class Scene:
         )
     
     def update(self, rate: float) -> None:
-
-        for cube in self.cubes:
-            cube.eulers = np.mod(
-                cube.eulers + cube.eulerVelocity * rate, 
-                [360, 360, 360], 
-                dtype=np.float32
-            )
+        return
+        # for objectType,objectList in self.entitys.items():
+        #     for entity in objectList:
+        #         entity.eulers = np.mod(
+        #             entity.eulers + entity.eulerVelocity * rate, 
+        #             [360, 360, 360], 
+        #             dtype=np.float32
+        #         )
 
 ##################################### Control #################################
 
@@ -294,42 +315,63 @@ class Engine:
 
     def create_assets(self,scene):
         #create assets
-        self.wood_texture = Material("goldBrick", "png")
-        self.cube_mesh = ObjMesh("models/solar.obj")
 
-        #generate position buffer
-        self.cubeTransforms = np.array([
-            pyrr.matrix44.create_identity(dtype = np.float32)
+        self.meshes: dict[int, ObjMesh] = {
+            OBJECT_SOLAR: ObjMesh("models/solar.obj"),
+            OBJECT_HULL: ObjMesh("models/cyinder.obj")
+        }
 
-            for i in range(len(scene.cubes))
-        ], dtype=np.float32)
-        glBindVertexArray(self.cube_mesh.vao)
-        self.cubeTransformVBO = glGenBuffers(1)
-        glBindBuffer(
-            GL_ARRAY_BUFFER, 
-            self.cubeTransformVBO
-        )
-        glBufferData(
-            GL_ARRAY_BUFFER, 
-            self.cubeTransforms.nbytes, 
-            self.cubeTransforms, 
-            GL_STATIC_DRAW
-        )
-        glEnableVertexAttribArray(5)
-        glVertexAttribPointer(5, 4, GL_FLOAT, GL_FALSE, 64, ctypes.c_void_p(0))
-        glEnableVertexAttribArray(6)
-        glVertexAttribPointer(6, 4, GL_FLOAT, GL_FALSE, 64, ctypes.c_void_p(16))
-        glEnableVertexAttribArray(7)
-        glVertexAttribPointer(7, 4, GL_FLOAT, GL_FALSE, 64, ctypes.c_void_p(32))
-        glEnableVertexAttribArray(8)
-        glVertexAttribPointer(8, 4, GL_FLOAT, GL_FALSE, 64, ctypes.c_void_p(48))
-        glVertexAttribDivisor(5,1)
-        glVertexAttribDivisor(6,1)
-        glVertexAttribDivisor(7,1)
-        glVertexAttribDivisor(8,1)
+        self.materials: dict[int, Material] = {
+            OBJECT_SOLAR: Material("goldBrick", "png"),
+            OBJECT_HULL: Material("metalTile", "png"),
+
+        }
+
+        self.entityTransforms = {}
+        self.entityTransformVBO = {}
+
+        for objectType,objectList in scene.entitys.items():
+            mesh = self.meshes[objectType]
+            print(objectType)
+            #generate position buffer
+            self.entityTransforms[objectType] = np.array([
+                pyrr.matrix44.create_identity(dtype = np.float32)
+
+                for i in range(len(objectList))
+            ], dtype=np.float32)
+
+            glBindVertexArray(mesh.vao)
+            self.entityTransformVBO[objectType] = glGenBuffers(1)
+            glBindBuffer(
+                GL_ARRAY_BUFFER, 
+                self.entityTransformVBO[objectType]
+            )
+            glBufferData(
+                GL_ARRAY_BUFFER, 
+                self.entityTransforms[objectType].nbytes, 
+                self.entityTransforms[objectType], 
+                GL_STATIC_DRAW
+            )
+            
+            glEnableVertexAttribArray(5)
+            glVertexAttribPointer(5, 4, GL_FLOAT, GL_FALSE, 64, ctypes.c_void_p(0))
+            glEnableVertexAttribArray(6)
+            glVertexAttribPointer(6, 4, GL_FLOAT, GL_FALSE, 64, ctypes.c_void_p(16))
+            glEnableVertexAttribArray(7)
+            glVertexAttribPointer(7, 4, GL_FLOAT, GL_FALSE, 64, ctypes.c_void_p(32))
+            glEnableVertexAttribArray(8)
+            glVertexAttribPointer(8, 4, GL_FLOAT, GL_FALSE, 64, ctypes.c_void_p(48))
+            glVertexAttribDivisor(5,1)
+            glVertexAttribDivisor(6,1)
+            glVertexAttribDivisor(7,1)
+            glVertexAttribDivisor(8,1)
 
 
-        self.screen = TexturedQuad(0, 0, 1, 1)
+
+
+
+
+        
 
 
     def set_up_shaders(self):
@@ -500,15 +542,15 @@ class Engine:
 
     def draw(self, scene):
 
-        glBindFramebuffer(GL_FRAMEBUFFER, self.framebuffers.fbo)
-        glDrawBuffers(2, (GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1))
-        glClearColor(0,0,0.5,0)
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
-        glEnable(GL_DEPTH_TEST)
+        # glBindFramebuffer(GL_FRAMEBUFFER, self.framebuffers.fbo)
+        # glDrawBuffers(2, (GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1))
+        # glClearColor(0,0,0.5,0)
+        # glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
+        # glEnable(GL_DEPTH_TEST)
     
         #refresh screen
       
-        #glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
 
         view_transform = pyrr.matrix44.create_look_at(
             eye = scene.player.position,
@@ -530,31 +572,37 @@ class Engine:
             glUniform3fv(self.lightLocTextured["color"][i], 1, light.color)
             glUniform1f(self.lightLocTextured["strength"][i], 1)
         
-        for i, cube in enumerate(scene.cubes):
-            model_transform = pyrr.matrix44.create_identity(dtype=np.float32)
-            model_transform = pyrr.matrix44.multiply(
-                m1=model_transform, 
-                m2=pyrr.matrix44.create_from_eulers(
-                    eulers=np.radians(cube.eulers), dtype=np.float32
+
+        for objectType,objectList in scene.entitys.items():
+
+            for i, entity in enumerate(objectList):
+                model_transform = pyrr.matrix44.create_identity(dtype=np.float32)
+                model_transform = pyrr.matrix44.multiply(
+                    m1=model_transform, 
+                    m2=pyrr.matrix44.create_from_eulers(
+                        eulers=np.radians(entity.eulers), dtype=np.float32
+                    )
                 )
-            )
-            model_transform = pyrr.matrix44.multiply(
-                m1=model_transform, 
-                m2=pyrr.matrix44.create_from_translation(
-                    vec=np.array(cube.position),dtype=np.float32
+                model_transform = pyrr.matrix44.multiply(
+                    m1=model_transform, 
+                    m2=pyrr.matrix44.create_from_translation(
+                        vec=np.array(entity.position),dtype=np.float32
+                    )
                 )
+                self.entityTransforms[objectType][i] = model_transform
+            
+            glBindVertexArray(self.meshes[objectType].vao)
+            glBindBuffer(
+                GL_ARRAY_BUFFER, 
+                self.entityTransformVBO[objectType]
             )
-            self.cubeTransforms[i] = model_transform
-        
-        glBindVertexArray(self.cube_mesh.vao)
-        glBindBuffer(
-            GL_ARRAY_BUFFER, 
-            self.cubeTransformVBO
-        )
-        glBufferData(GL_ARRAY_BUFFER, self.cubeTransforms.nbytes, self.cubeTransforms, GL_STATIC_DRAW)
-        self.wood_texture.use()
-        glDrawArraysInstanced(GL_TRIANGLES, 0, self.cube_mesh.vertex_count, len(scene.cubes))
-        
+            glBufferData(GL_ARRAY_BUFFER, self.entityTransforms[objectType].nbytes, self.entityTransforms[objectType], GL_STATIC_DRAW)
+            self.materials[objectType].use()
+            glDrawArraysInstanced(GL_TRIANGLES, 0, self.meshes[objectType].vertex_count, len(objectList))
+            
+
+
+
         glUseProgram(self.shaderColored)
         
         glUniformMatrix4fv(self.viewLocUntextured, 1, GL_FALSE, view_transform)
@@ -569,31 +617,31 @@ class Engine:
             glDrawArrays(GL_TRIANGLES, 0, self.light_mesh.vertex_count)
         
 
-            glBindFramebuffer(GL_FRAMEBUFFER, 0)
-            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
-            glDisable(GL_DEPTH_TEST)
+            # glBindFramebuffer(GL_FRAMEBUFFER, 0)
+            # glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
+            # glDisable(GL_DEPTH_TEST)
 
-            glUseProgram(self.bloom_blur_shader)
-            glActiveTexture(GL_TEXTURE0)
-            glBindTexture(GL_TEXTURE_2D, self.colorBuffers[0].texture)
-            glActiveTexture(GL_TEXTURE1)
-            glBindTexture(GL_TEXTURE_2D, self.colorBuffers[1].texture)
-            glBindVertexArray(self.screen.vao)
+            # glUseProgram(self.bloom_blur_shader)
+            # glActiveTexture(GL_TEXTURE0)
+            # glBindTexture(GL_TEXTURE_2D, self.colorBuffers[0].texture)
+            # glActiveTexture(GL_TEXTURE1)
+            # glBindTexture(GL_TEXTURE_2D, self.colorBuffers[1].texture)
+            # glBindVertexArray(self.screen.vao)
 
-            glUseProgram(self.bloom_transfer_shader)
-            glActiveTexture(GL_TEXTURE0)
-            glBindTexture(GL_TEXTURE_2D, self.colorBuffers[0].texture)
-            glActiveTexture(GL_TEXTURE1)
-            glBindTexture(GL_TEXTURE_2D, self.colorBuffers[1].texture)
-            glBindVertexArray(self.screen.vao)
+            # glUseProgram(self.bloom_transfer_shader)
+            # glActiveTexture(GL_TEXTURE0)
+            # glBindTexture(GL_TEXTURE_2D, self.colorBuffers[0].texture)
+            # glActiveTexture(GL_TEXTURE1)
+            # glBindTexture(GL_TEXTURE_2D, self.colorBuffers[1].texture)
+            # glBindVertexArray(self.screen.vao)
 
         glFlush()
 
     def quit(self):
-        self.cube_mesh.destroy()
+        self.entity_mesh.destroy()
         self.light_mesh.destroy()
-        self.wood_texture.destroy()
-        glDeleteBuffers(1, (self.cubeTransformVBO,))
+        self.gold_texture.destroy()
+        glDeleteBuffers(1, (self.entityTransformVBO,))
         glDeleteProgram(self.shaderTextured)
         glDeleteProgram(self.shaderColored)
 
@@ -1010,9 +1058,12 @@ class ObjMesh:
                 line = f.readline()
         return vertices
     
+
     def destroy(self):
         glDeleteVertexArrays(1, (self.vao,))
         glDeleteBuffers(1,(self.vbo,))
+
+
 
 ###############################################################################
 
