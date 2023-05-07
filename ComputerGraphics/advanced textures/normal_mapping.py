@@ -12,6 +12,9 @@ from PIL import Image, ImageOps
 
 OBJECT_SOLAR  = 0
 OBJECT_HULL =  1
+OBJECT_DISH = 2
+OBJECT_SKY = 3
+
 
 SCREEN_WIDTH = 640
 SCREEN_HEIGHT = 480
@@ -21,7 +24,7 @@ RETURN_ACTION_EXIT = 1
 
 #0: debug, 1: production
 GAME_MODE = 0
-LIGHT_COUNT = 4
+LIGHT_COUNT = 8
 
 ############################## helper functions ###############################
 
@@ -153,33 +156,42 @@ class Scene:
         self.entitys[OBJECT_SOLAR] = []
 
         for i in range(10):
-            position = [-1, ((-1 + i * 0.25)), -1]
+            position = [-1, ((-1 + i * 0.25)), -2]
             self.entitys[OBJECT_SOLAR].append(Entity(position, [0, 90, 0], [0, 0, 0]))
         
         i = 0
         for i in range(15):
-            position = [-1 - 0.17, ((-1 + i * 0.25)), (-1 + (1 * 0.5))]
+            position = [-1 - 0.17, ((-1 + i * 0.25)), (-2 + (1 * 0.5))]
             self.entitys[OBJECT_SOLAR].append(Entity(position, [0, 90, 0], [0, 0, 0]))
             
         i = 0
         for i in range(10):
-            position = [-1 - 0.34, ((-1 + i * 0.25)), (-1 + (2 * 0.5))]
+            position = [-1 - 0.34, ((-1 + i * 0.25)), (-2 + (2 * 0.5))]
             self.entitys[OBJECT_SOLAR].append(Entity(position, [0, 90, 0], [0, 0, 0]))
 
         k = 0
-        for i in range(15):
+        for i in range(18):
             for j in range(3):
                 if i < 10:
-                    position = [-1 - (j * 0.17), ((4 + i * 0.25)), (-1 + (j * 0.5))]
+                    position = [-1 - (j * 0.17), ((4.5 + i * 0.25)), (-2 + (j * 0.5))]
                 elif i > 9 and j == 1:
-                    position = [-1 - (j * 0.17), ((4  - (k * 0.25))), (-1 + (j * 0.5))]
+                    position = [-1 - (j * 0.17), ((4.5  - (k * 0.25))), (-2 + (j * 0.5))]
                     k+=1
                 self.entitys[OBJECT_SOLAR].append(Entity(position, [0, 90, 0], [0, 0, 0]))
                 
         self.entitys[OBJECT_HULL] = [
             Entity(
-                position = [-1,-5,-0.5],
+                position = [-1,-4,-0.5],
                 eulers = [0,90,0],
+                eulerVelocity = [0,0,0],
+            )
+        ]
+
+
+        self.entitys[OBJECT_DISH] = [
+            Entity(
+                position = [-2.5,6,-0.5],
+                eulers = [-20,0,-90],
                 eulerVelocity = [0,0,0],
             )
         ]
@@ -189,10 +201,10 @@ class Scene:
         self.lights = []
 
         for i in range(LIGHT_COUNT):
-            if(i < 2):
-                position = [-2,3+i,0+i]
+            if(i < (LIGHT_COUNT/2)):
+                position = [0,3+i,0.2+i]
             else:
-                position = [-2,6+i, 0 + m]
+                position = [2,6+i, 0.2 + m]
                 m+=1
             self.lights.append(Light(position,color = [1, 1, 1]))
             # Light(
@@ -200,8 +212,8 @@ class Scene:
             # )  
 
         self.player = Player(
-            position = [-4, 0, 0],
-            eulers = [0, 0, 0]
+            position = [0, -5, 0],
+            eulers = [0, 0, 120]
         )
     
     def update(self, rate: float) -> None:
@@ -317,14 +329,15 @@ class Engine:
         #create assets
 
         self.meshes: dict[int, ObjMesh] = {
-            OBJECT_SOLAR: ObjMesh("models/solar.obj"),
-            OBJECT_HULL: ObjMesh("models/cyinder.obj")
+            OBJECT_SOLAR: ObjMesh("models/solar.obj",0),
+            OBJECT_HULL: ObjMesh("models/hull.obj",0),
+            OBJECT_DISH:ObjMesh("models/dish.obj",0)
         }
 
         self.materials: dict[int, Material] = {
             OBJECT_SOLAR: Material("goldBrick", "png"),
-            OBJECT_HULL: Material("metalTile", "png"),
-
+            OBJECT_HULL: Material("hull", "png"),
+            OBJECT_DISH: Material("dish", "png"),
         }
 
         self.entityTransforms = {}
@@ -375,6 +388,7 @@ class Engine:
 
 
     def set_up_shaders(self):
+
         self.shaderTextured = self.createShader(
             "shaders\\vertex.txt", 
             "shaders\\fragment.txt"
@@ -597,11 +611,11 @@ class Engine:
                 self.entityTransformVBO[objectType]
             )
             glBufferData(GL_ARRAY_BUFFER, self.entityTransforms[objectType].nbytes, self.entityTransforms[objectType], GL_STATIC_DRAW)
+           
             self.materials[objectType].use()
+
             glDrawArraysInstanced(GL_TRIANGLES, 0, self.meshes[objectType].vertex_count, len(objectList))
             
-
-
 
         glUseProgram(self.shaderColored)
         
@@ -916,9 +930,9 @@ class Framebuffer:
 
 class ObjMesh:
 
-    def __init__(self, filename):
+    def __init__(self, filename,split:int):
         # x, y, z, s, t, nx, ny, nz, tangent, bitangent, model(instanced)
-        self.vertices = self.loadMesh(filename)
+        self.vertices = self.loadMesh(filename,split)
         self.vertex_count = len(self.vertices)//14
         self.vertices = np.array(self.vertices, dtype=np.float32)
 
@@ -949,7 +963,7 @@ class ObjMesh:
         glVertexAttribPointer(4, 3, GL_FLOAT, GL_FALSE, 56, ctypes.c_void_p(offset))
         offset += 12
     
-    def loadMesh(self, filename):
+    def loadMesh(self, filename,split:int):
 
         #raw, unassembled data
         v = []
@@ -995,13 +1009,19 @@ class ObjMesh:
                     for vertex in line:
                         #break out into [v,vt,vn],
                         #correct for 0 based indexing.
-                        l = vertex.split("/")
+                        if(split == 1):
+                            l = vertex.split("//")
+                        else:
+                            l = vertex.split("/")
+                        
                         position = int(l[0]) - 1
                         faceVertices.append(v[position])
                         texture = int(l[1]) - 1
-                        faceTextures.append(vt[texture])
-                        normal = int(l[2]) - 1
-                        faceNormals.append(vn[normal])
+                        if(texture < len(vt)):
+                            faceTextures.append(vt[texture])
+                        if(len(l) > 2):
+                            normal = int(l[2]) - 1
+                            faceNormals.append(vn[normal])
                     # obj file uses triangle fan format for each face individually.
                     # unpack each face
                     triangles_in_face = len(line) - 2
@@ -1016,6 +1036,7 @@ class ObjMesh:
                         vertex_order.append(i+2)
                     # calculate tangent and bitangent for point
                     # how do model positions relate to texture positions?
+
                     point1 = faceVertices[vertex_order[0]]
                     point2 = faceVertices[vertex_order[1]]
                     point3 = faceVertices[vertex_order[2]]
@@ -1063,6 +1084,60 @@ class ObjMesh:
         glDeleteVertexArrays(1, (self.vao,))
         glDeleteBuffers(1,(self.vbo,))
 
+
+class MaterialCubemap(Material):
+
+    def __init__(self, filepath):
+
+        super().__init__(GL_TEXTURE_CUBE_MAP, 0)
+
+        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE)
+        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE)
+        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE)
+        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_NEAREST)
+        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR)
+
+        #load textures
+        with Image.open(f"{filepath}_left.png", mode = "r") as img:
+            image_width,image_height = img.size
+            img = img.convert('RGBA')
+            img_data = bytes(img.tobytes())
+            glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_Y,0,GL_RGBA8,image_width,image_height,0,GL_RGBA,GL_UNSIGNED_BYTE,img_data)
+        
+        with Image.open(f"{filepath}_right.png", mode = "r") as img:
+            image_width,image_height = img.size
+            img = ImageOps.flip(img)
+            img = ImageOps.mirror(img)
+            img = img.convert('RGBA')
+            img_data = bytes(img.tobytes())
+            glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_Y,0,GL_RGBA8,image_width,image_height,0,GL_RGBA,GL_UNSIGNED_BYTE,img_data)
+        
+        with Image.open(f"{filepath}_top.png", mode = "r") as img:
+            image_width,image_height = img.size
+            img = img.rotate(90)
+            img = img.convert('RGBA')
+            img_data = bytes(img.tobytes())
+            glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_Z,0,GL_RGBA8,image_width,image_height,0,GL_RGBA,GL_UNSIGNED_BYTE,img_data)
+
+        with Image.open(f"{filepath}_bottom.png", mode = "r") as img:
+            image_width,image_height = img.size
+            img = img.convert('RGBA')
+            img_data = bytes(img.tobytes())
+            glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_Z,0,GL_RGBA8,image_width,image_height,0,GL_RGBA,GL_UNSIGNED_BYTE,img_data)
+        
+        with Image.open(f"{filepath}_back.png", mode = "r") as img:
+            image_width,image_height = img.size
+            img = img.rotate(-90)
+            img = img.convert('RGBA')
+            img_data = bytes(img.tobytes())
+            glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_X,0,GL_RGBA8,image_width,image_height,0,GL_RGBA,GL_UNSIGNED_BYTE,img_data)
+
+        with Image.open(f"{filepath}_front.png", mode = "r") as img:
+            image_width,image_height = img.size
+            img = img.rotate(90)
+            img = img.convert('RGBA')
+            img_data = bytes(img.tobytes())
+            glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X,0,GL_RGBA8,image_width,image_height,0,GL_RGBA,GL_UNSIGNED_BYTE,img_data)
 
 
 ###############################################################################

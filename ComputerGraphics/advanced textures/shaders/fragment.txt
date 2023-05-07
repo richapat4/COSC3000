@@ -1,6 +1,6 @@
 #version 330 core
 #extension GL_ARB_separate_shader_objects : enable
-#define MAX_LIGHT_COUNT 4
+#define MAX_LIGHT_COUNT 8
 
 struct Material {
     sampler2D albedo;
