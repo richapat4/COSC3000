@@ -1,0 +1,13 @@
+#version 330 core
+
+in vec2 fragmentTexCoord;
+
+uniform sampler2D atmosTexture;
+
+out vec4 color;
+
+void main()
+{
+    color = texture(atmosTexture, fragmentTexCoord);
+    color.a = 0.5;
+}
