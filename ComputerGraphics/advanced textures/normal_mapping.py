@@ -102,6 +102,13 @@ class Object:
 
         return model_transform
 
+    def update(self, rate: float) -> None:
+
+        self.eulers[2] += 0.25 * rate
+        if self.eulers[2] > 360:
+            self.eulers[2] -= 360
+
+
 class Hull:
 
 
@@ -258,13 +265,13 @@ class Scene:
 
         self.objects=[
                 Object(
-                position = [-2.5,2,-0.5],
+                position = [-10.5,1,-0.5],
                 eulers = [-20,0,-90],
                 eulerVelocity = [0,0,0],
                 color = [1,1,1]
             ),
                 Object(
-                position = [-2.5,2,-0.5],
+                position = [-10.5,1,-0.5],
                 eulers = [-20,0,-90],
                 eulerVelocity = [0,0,0],
                 color = [0,0,0]
@@ -278,14 +285,10 @@ class Scene:
         )
     
     def update(self, rate: float) -> None:
-        return
-        # for objectType,objectList in self.entitys.items():
-        #     for entity in objectList:
-        #         entity.eulers = np.mod(
-        #             entity.eulers + entity.eulerVelocity * rate, 
-        #             [360, 360, 360], 
-        #             dtype=np.float32
-        #         )
+        for object in self.objects:
+            object.update(rate/5)
+        # return
+ 
 
 ##################################### Control #################################
 
@@ -381,7 +384,7 @@ class Engine:
         # glEnable(GL_DEPTH_TEST)
         # # glEnable(GL_CULL_FACE)
         # # glCullFace(GL_BACK)
-        
+        glDisable(GL_CULL_FACE)
         glEnable(GL_DEPTH_TEST)
         glDepthFunc(GL_LESS)
 
@@ -611,7 +614,7 @@ class Engine:
         glUseProgram(self.shaderEarth)
         projection_transform = pyrr.matrix44.create_perspective_projection(
             fovy = 45, aspect = 640/480, 
-            near = 0.1, far = 10, dtype = np.float32
+            near = 0.1, far = 30, dtype = np.float32
         )
 
         glUniformMatrix4fv(
@@ -628,7 +631,7 @@ class Engine:
         glUseProgram(self.shaderAtmos)
         projection_transform = pyrr.matrix44.create_perspective_projection(
             fovy = 45, aspect = 680 / 480,
-            near = 0.1, far = 10, dtype = np.float32
+            near = 0.1, far = 30, dtype = np.float32
         )
 
         glUniformMatrix4fv(
