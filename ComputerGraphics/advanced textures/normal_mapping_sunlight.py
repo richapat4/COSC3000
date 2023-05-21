@@ -509,84 +509,84 @@ class Engine:
             near = 0.1, far = 50, dtype=np.float32
         )
 
-        glUseProgram(self.shaderTextured)
+        # glUseProgram(self.shaderTextured)
 
-        # self.lightLocTextured = {
+        # # self.lightLocTextured = {
 
-        #     "pos": [
-        #         glGetUniformLocation(
-        #             self.shaderTextured,f"lightPos[{i}]"
-        #         ) 
-        #         for i in range(LIGHT_COUNT)
-        #     ],
+        # #     "pos": [
+        # #         glGetUniformLocation(
+        # #             self.shaderTextured,f"lightPos[{i}]"
+        # #         ) 
+        # #         for i in range(LIGHT_COUNT)
+        # #     ],
 
-        #     "color": [
-        #         glGetUniformLocation(
-        #             self.shaderTextured,f"lights[{i}].color"
-        #         ) 
-        #         for i in range(LIGHT_COUNT)
-        #     ],
+        # #     "color": [
+        # #         glGetUniformLocation(
+        # #             self.shaderTextured,f"lights[{i}].color"
+        # #         ) 
+        # #         for i in range(LIGHT_COUNT)
+        # #     ],
 
-        #     "strength": [
-        #         glGetUniformLocation(
-        #             self.shaderTextured,f"lights[{i}].strength"
-        #         ) 
-        #         for i in range(LIGHT_COUNT)
-        #     ],
+        # #     "strength": [
+        # #         glGetUniformLocation(
+        # #             self.shaderTextured,f"lights[{i}].strength"
+        # #         ) 
+        # #         for i in range(LIGHT_COUNT)
+        # #     ],
 
-        #     "count": glGetUniformLocation(
-        #         self.shaderTextured,f"lightCount"
-        #     )
-        # }
+        # #     "count": glGetUniformLocation(
+        # #         self.shaderTextured,f"lightCount"
+        # #     )
+        # # }
         
-        glUseProgram(self.shaderTextured)
+        # glUseProgram(self.shaderTextured)
         
-        self.cameraLocTextured = glGetUniformLocation(self.shaderTextured, "viewPos")
+        # self.cameraLocTextured = glGetUniformLocation(self.shaderTextured, "viewPos")
 
-        #get shader locations
-        self.viewLocTextured = glGetUniformLocation(self.shaderTextured, "view")
-        self.modelLocTextured = glGetUniformLocation(self.shaderTextured, "model")
+        # #get shader locations
+        # self.viewLocTextured = glGetUniformLocation(self.shaderTextured, "view")
+        # self.modelLocTextured = glGetUniformLocation(self.shaderTextured, "model")
 
-        #set up uniforms
-        glUniformMatrix4fv(
-            glGetUniformLocation(
-                self.shaderTextured,"projection"
-            ),
-            1,GL_FALSE,projection_transform
-        )
+        # #set up uniforms
+        # glUniformMatrix4fv(
+        #     glGetUniformLocation(
+        #         self.shaderTextured,"projection"
+        #     ),
+        #     1,GL_FALSE,projection_transform
+        # )
 
-        glUniform3fv(
-            glGetUniformLocation(
-                self.shaderTextured,"ambient"
-            ), 
-            1, np.array([0.1, 0.1, 0.1],dtype=np.float32)
-        )
+        # glUniform3fv(
+        #     glGetUniformLocation(
+        #         self.shaderTextured,"ambient"
+        #     ), 
+        #     1, np.array([0.1, 0.1, 0.1],dtype=np.float32)
+        # )
 
-    #albedo : 0 
-        glUniform1i(
-            glGetUniformLocation(
-                self.shaderTextured, "material.albedo"
-            ), 0
-        )
+#     #albedo : 0 
+#         glUniform1i(
+#             glGetUniformLocation(
+#                 self.shaderTextured, "material.albedo"
+#             ), 0
+#         )
 
-    #occlusion : 1 
-        glUniform1i(
-            glGetUniformLocation(
-                self.shaderTextured, "material.ao"
-            ), 1
-        )
- #normal : 2
-        glUniform1i(
-            glGetUniformLocation(
-                self.shaderTextured, "material.normal"
-            ), 2
-        )
-    #specular : 3
-        glUniform1i(
-            glGetUniformLocation(
-                self.shaderTextured, "material.specular"
-            ), 3
-        )
+#     #occlusion : 1 
+#         glUniform1i(
+#             glGetUniformLocation(
+#                 self.shaderTextured, "material.ao"
+#             ), 1
+#         )
+#  #normal : 2
+#         glUniform1i(
+#             glGetUniformLocation(
+#                 self.shaderTextured, "material.normal"
+#             ), 2
+#         )
+#     #specular : 3
+#         glUniform1i(
+#             glGetUniformLocation(
+#                 self.shaderTextured, "material.specular"
+#             ), 3
+#         )
    
 
         glUseProgram(self.shaderColored)
@@ -700,57 +700,57 @@ class Engine:
         dtype = np.float32
         )
         
-        glUseProgram(self.shaderTextured) #Change to vertex_advanced and fragment_advanced
+        # glUseProgram(self.shaderTextured) #Change to vertex_advanced and fragment_advanced
     
-        # glEnable(GL_DEPTH_TEST)
+        # # glEnable(GL_DEPTH_TEST)
 
-        glUniformMatrix4fv(
-            self.viewLocTextured, 1, GL_FALSE, view_transform
-        )
+        # glUniformMatrix4fv(
+        #     self.viewLocTextured, 1, GL_FALSE, view_transform
+        # )
 
-        glUniform3fv(self.cameraLocTextured, 1, scene.player.position)
+        # glUniform3fv(self.cameraLocTextured, 1, scene.player.position)
         #lights
-        glUniform1f(self.lightLocTextured["count"], min(LIGHT_COUNT,max(0,len(scene.lights))))
+        # glUniform1f(self.lightLocTextured["count"], min(LIGHT_COUNT,max(0,len(scene.lights))))
 
-        for i, light in enumerate(scene.lights):
-            glUniform3fv(self.lightLocTextured["pos"][i], 1, light.position)
-            glUniform3fv(self.lightLocTextured["color"][i], 1, light.color)
-            glUniform1f(self.lightLocTextured["strength"][i], 1)
-        
+        # for i, light in enumerate(scene.lights):
+        #     glUniform3fv(self.lightLocTextured["pos"][i], 1, light.position)
+        #     glUniform3fv(self.lightLocTextured["color"][i], 1, light.color)
+        #     glUniform1f(self.lightLocTextured["strength"][i], 1)
 
-        for objectType,objectList in scene.entitys.items():
+        # for objectType,objectList in scene.entitys.items():
 
-            for i, entity in enumerate(objectList):
-                model_transform = pyrr.matrix44.create_identity(dtype=np.float32)
-                model_transform = pyrr.matrix44.multiply(
-                    m1=model_transform, 
-                    m2=pyrr.matrix44.create_from_eulers(
-                        eulers=np.radians(entity.eulers), dtype=np.float32
-                    )
-                )
-                model_transform = pyrr.matrix44.multiply(
-                    m1=model_transform, 
-                    m2=pyrr.matrix44.create_from_translation(
-                        vec=np.array(entity.position),dtype=np.float32
-                    )
-                )
-                self.entityTransforms[objectType][i] = model_transform
+        #     for i, entity in enumerate(objectList):
+        #         model_transform = pyrr.matrix44.create_identity(dtype=np.float32)
+        #         model_transform = pyrr.matrix44.multiply(
+        #             m1=model_transform, 
+        #             m2=pyrr.matrix44.create_from_eulers(
+        #                 eulers=np.radians(entity.eulers), dtype=np.float32
+        #             )
+        #         )
+        #         model_transform = pyrr.matrix44.multiply(
+        #             m1=model_transform, 
+        #             m2=pyrr.matrix44.create_from_translation(
+        #                 vec=np.array(entity.position),dtype=np.float32
+        #             )
+        #         )
+        #         self.entityTransforms[objectType][i] = model_transform
             
-            glBindVertexArray(self.meshes[objectType].vao)
-            glBindBuffer(
-                GL_ARRAY_BUFFER, 
-                self.entityTransformVBO[objectType]
-            )
-            glBufferData(GL_ARRAY_BUFFER, self.entityTransforms[objectType].nbytes, self.entityTransforms[objectType], GL_STATIC_DRAW)
+        #     glBindVertexArray(self.meshes[objectType].vao)
+        #     glBindBuffer(
+        #         GL_ARRAY_BUFFER, 
+        #         self.entityTransformVBO[objectType]
+        #     )
+        #     glBufferData(GL_ARRAY_BUFFER, self.entityTransforms[objectType].nbytes, self.entityTransforms[objectType], GL_STATIC_DRAW)
            
-            self.materials[objectType].use()
+        #     self.materials[objectType].use()
 
-            glDrawArraysInstanced(GL_TRIANGLES, 0, self.meshes[objectType].vertex_count, len(objectList))
+        #     glDrawArraysInstanced(GL_TRIANGLES, 0, self.meshes[objectType].vertex_count, len(objectList))
             
 
-        # glDisable(GL_BLEND)
+        glDisable(GL_BLEND)
+    
         glUseProgram(self.shaderEarth)
-        
+
         glUniformMatrix4fv(
             self.earthviewMatrixLocation, 
             1, GL_FALSE, view_transform
@@ -773,44 +773,31 @@ class Engine:
         glDrawArrays(GL_TRIANGLES, 0, self.meshes[OBJECT_EARTH].vertex_count)
 
         
-        # for objectType,objectList in scene.entitys.items():
-        #     for i, entity in enumerate(objectList):
-        #         model_transform = pyrr.matrix44.create_identity(dtype=np.float32)
-        #         model_transform = pyrr.matrix44.multiply(
-        #             m1=model_transform, 
-        #             m2=pyrr.matrix44.create_from_eulers(
-        #                 eulers=np.radians(entity.eulers), dtype=np.float32
-        #             )
-        #         )
-        #         model_transform = pyrr.matrix44.multiply(
-        #             m1=model_transform, 
-        #             m2=pyrr.matrix44.create_from_translation(
-        #                 vec=np.array(entity.position),dtype=np.float32
-        #             )
-        #         )
-        #         # self.entityTransforms[objectType][i] = model_transform
-        #         glUniformMatrix4fv(
-        #             self.earthmodelMatrixLocation,
-        #             1,GL_FALSE,
-        #             model_transform
-        #         )
-        #         glBindVertexArray(self.meshes[objectType].vao)
-        #         self.materials[objectType].use()
-        #         glDrawArraysInstanced(GL_TRIANGLES, 0, self.meshes[objectType].vertex_count, len(objectList))
-        
-        
-        
-            # glDrawArrays(GL_TRIANGLES, 0, self.meshes[objectType].vertex_count)
-
-            # glBindBuffer(
-            #     GL_ARRAY_BUFFER, 
-            #     self.entityTransformVBO[objectType]
-            # )
-            # glBufferData(GL_ARRAY_BUFFER, self.entityTransforms[objectType].nbytes, self.entityTransforms[objectType], GL_STATIC_DRAW)
-           
-            
-            
-
+        for objectType,objectList in scene.entitys.items():
+            for i, entity in enumerate(objectList):
+                model_transform = pyrr.matrix44.create_identity(dtype=np.float32)
+                model_transform = pyrr.matrix44.multiply(
+                    m1=model_transform, 
+                    m2=pyrr.matrix44.create_from_eulers(
+                        eulers=np.radians(entity.eulers), dtype=np.float32
+                    )
+                )
+                model_transform = pyrr.matrix44.multiply(
+                    m1=model_transform, 
+                    m2=pyrr.matrix44.create_from_translation(
+                        vec=np.array(entity.position),dtype=np.float32
+                    )
+                )
+                # self.entityTransforms[objectType][i] = model_transform
+                glUniformMatrix4fv(
+                    self.earthmodelMatrixLocation,
+                    1,GL_FALSE,
+                    model_transform
+                )
+                glBindVertexArray(self.meshes[objectType].vao)
+                self.materials[objectType].use()
+                glDrawArraysInstanced(GL_TRIANGLES, 0, self.meshes[objectType].vertex_count, len(objectList))
+                
         glEnable(GL_BLEND)
         glUseProgram(self.shaderAtmos)
 
