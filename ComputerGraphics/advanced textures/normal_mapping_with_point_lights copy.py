@@ -456,7 +456,7 @@ class Engine:
             OBJECT_SOLAR: AdvancedMaterial("goldBrick", "png"),
             OBJECT_HULL: AdvancedMaterial("hull", "png"),
             OBJECT_DISH: AdvancedMaterial("dish", "png"),
-            OBJECT_SKY: MaterialCubemap("gfx/sky"),
+            OBJECT_SKY: MaterialCubemap("gfx/space"),
             OBJECT_EARTH: Material2D("gfx/colors.jpg"),
             OBJECT_ATMOS: Material2D("gfx/clouds.jpg"),
         }
@@ -659,21 +659,9 @@ class Engine:
         return shader
 
     def render(self, scene):
-
-        # glBindFramebuffer(GL_FRAMEBUFFER, self.framebuffers.fbo)
-        # glDrawBuffers(2, (GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1))
-        # glClearColor(0,0,0.5,0)
-        # glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
-        # glEnable(GL_DEPTH_TEST)
-    
-        #refresh screen
       
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
         
-        #         self.right = np.array([0,1,0], dtype=np.float32)
-        # self.forwards = np.array([1,0,0], dtype=np.float32)
-        # self.global_up = np.array([0, 0, 1], dtype=np.float32)
-
 
         glUseProgram(self.shaderSky)
         glDisable(GL_DEPTH_TEST)
@@ -761,7 +749,7 @@ class Engine:
         glDrawArrays(GL_TRIANGLES, 0, self.meshes[OBJECT_ATMOS].vertex_count)
 
 
-# DONT RENDER LIGHT CUBES 
+        # DONT RENDER LIGHT CUBES 
         # glUseProgram(self.shaderColored)
         
         # glUniformMatrix4fv(self.viewLocUntextured, 1, GL_FALSE, view_transform)
@@ -779,15 +767,20 @@ class Engine:
         glFlush()
 
 
-
-
     def quit(self):
-        # self.entity_mesh.destroy()
-        # self.light_mesh.destroy()
-        # self.gold_texture.destroy()
-        glDeleteBuffers(1, (self.entityTransformVBO,))
+        for (_,mesh) in self.meshes.items():
+            mesh.destroy()
+        for (_,material) in self.materials.items():
+            material.destroy()
+
+        for (_,buff) in self.entityTransformVBO.items():
+            glDeleteBuffers(1, (buff,))
+
         glDeleteProgram(self.shaderTextured)
         glDeleteProgram(self.shaderColored)
+        glDeleteProgram(self.shaderSky)
+        glDeleteProgram(self.shaderAtmos)
+        glDeleteProgram(self.shaderEarth)
 
 
 class Material:
